@@ -1,6 +1,6 @@
 package sma
 
-import akka.actor.{Actor, ActorLogging, Props}
+import akka.actor.{ActorRef, Actor, ActorLogging, Props}
 import sma.DiggingMessages._
 
 object Digger {
@@ -9,7 +9,8 @@ object Digger {
   }
 }
 
-class Digger extends Actor with ActorLogging {
+class Digger(twitter: ActorRef) extends Actor with ActorLogging {
+
   override def receive = {
     case f: Digging =>
       forward(f, f.media)
@@ -19,6 +20,6 @@ class Digger extends Actor with ActorLogging {
   }
 
   def forward(message: Digging, topic: String) = {
-    println("fowarding message!")
+    twitter ! message
   }
 }

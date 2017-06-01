@@ -7,5 +7,4 @@ trait EventSourcing {
   implicit val system: ActorSystem = ActorSystem("sma")
   implicit val materializer = ActorMaterializer()
   implicit val executionContext = system.dispatcher
-
 }
