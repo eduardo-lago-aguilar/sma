@@ -6,7 +6,8 @@ import akka.http.scaladsl.server.HttpApp
 object WebServerHttpApp extends HttpApp with App with Commands {
 
   implicit val twitter = system.actorOf(Twitter.props(), "twitter")
-  implicit val digger = system.actorOf(Props(new Digger(twitter)), "digger")
+  implicit val facebook = system.actorOf(Facebook.props(), "facebook")
+  implicit val digger = system.actorOf(Props(new Digger(twitter, facebook)), "digger")
 
   def routes = commandRoutes
 

@@ -9,7 +9,9 @@ object Digger {
   }
 }
 
-class Digger(twitter: ActorRef) extends Actor with ActorLogging {
+class Digger(twitter: ActorRef, facebook: ActorRef) extends Actor with ActorLogging {
+
+  val medias = Map("twitter" -> twitter, "facebook" -> facebook)
 
   override def receive = {
     case f: Digging =>
@@ -19,7 +21,7 @@ class Digger(twitter: ActorRef) extends Actor with ActorLogging {
       sender() ! f.reply
   }
 
-  def forward(message: Digging, topic: String) = {
-    twitter ! message
+  def forward(message: Digging, media: String) = {
+    medias(media) ! message
   }
 }

@@ -5,14 +5,10 @@ package sma
   */
 object DiggingMessages {
 
-  val defaultMedia = "twitter"
-
   abstract class Digging(follower: String, interest: String) {
 
-    private val _interest = s"${interest}${defaultMedia}".split("@")
-
-    val followee = _interest(0)
-    def media = _interest(1)
+    val followee = interest.split("@")(0)
+    def media = interest.split("@")(1)
 
     def repack: Digging
     def reply: DiggingReply
