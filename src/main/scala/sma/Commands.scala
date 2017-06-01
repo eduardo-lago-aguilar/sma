@@ -1,4 +1,4 @@
-package sma.routes
+package sma
 
 import akka.http.scaladsl.marshallers.xml.ScalaXmlSupport.defaultNodeSeqMarshaller
 import akka.http.scaladsl.server.directives.MethodDirectives.get

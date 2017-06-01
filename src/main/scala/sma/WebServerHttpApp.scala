@@ -1,7 +1,8 @@
 package sma
 
 import akka.http.scaladsl.server.HttpApp
-import sma.routes.Commands
+
+import com.typesafe.config.ConfigFactory
 
 /**
  * Server will be started calling `WebServerHttpApp.startServer("localhost", 8080)`
