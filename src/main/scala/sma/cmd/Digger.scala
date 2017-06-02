@@ -2,8 +2,10 @@ package sma.cmd
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.common.utils.Bytes
 import sma.Committing
 import sma.cmd.DiggingMessages._
+
 
 object Digger {
   def props(): Props = {
@@ -24,7 +26,9 @@ class Digger(twitter: ActorRef, facebook: ActorRef) extends Actor with ActorLogg
   }
 
   def forward(message: Digging, media: String) = {
-//    kafkaProducer.send(new ProducerRecord[String, Array[Byte]]("topic2", new Array[Byte]()))
+    kafkaProducer.send(kafkaRecord(message, "topic7"))
     medias(media) ! message
   }
+
+  def kafkaRecord(message: Digging, topic: String): ProducerRecord[String, Bytes] = new ProducerRecord[String, Bytes](topic, message.serialize)
 }
