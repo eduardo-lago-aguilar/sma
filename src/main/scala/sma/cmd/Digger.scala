@@ -18,17 +18,22 @@ class Digger(twitter: ActorRef, facebook: ActorRef) extends Actor with ActorLogg
   val medias = Map("twitter" -> twitter, "facebook" -> facebook)
 
   override def receive = {
-    case f: Digging =>
-      forward(f, f.media)
+    case dig: Digging =>
+      commit(dig)
+      forward(dig)
 
-      log.info(s"received ${f.mkString}")
-      sender() ! f.reply
+      log.info(s"received ${dig.mkString}")
+
+      sender() ! dig.reply
   }
 
-  def forward(message: Digging, media: String) = {
-    kafkaProducer.send(kafkaRecord(message, "topic7"))
-    medias(media) ! message
+  def commit(message: Digging) = {
+    kafkaProducer.send(kafkaRecord(message, digTopic(message.follower, message.media)))
   }
 
-  def kafkaRecord(message: Digging, topic: String): ProducerRecord[String, Bytes] = new ProducerRecord[String, Bytes](topic, message.serialize)
+  def forward(message: Digging) = {
+    medias(message.media) ! message
+  }
+
+
 }
