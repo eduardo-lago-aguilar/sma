@@ -1,7 +1,7 @@
-package sma
+package sma.cmd
 
-import akka.actor.{Props, Actor, ActorLogging}
-import sma.DiggingMessages.Follow
+import akka.actor.{Actor, ActorLogging, Props}
+import sma.cmd.DiggingMessages.Follow
 
 object Twitter {
   def props(): Props = {

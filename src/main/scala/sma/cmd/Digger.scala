@@ -1,7 +1,7 @@
-package sma
+package sma.cmd
 
-import akka.actor.{ActorRef, Actor, ActorLogging, Props}
-import sma.DiggingMessages._
+import akka.actor.{Actor, ActorLogging, ActorRef, Props}
+import DiggingMessages._
 
 object Digger {
   def props(): Props = {
