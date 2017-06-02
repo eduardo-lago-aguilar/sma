@@ -7,7 +7,7 @@ lazy val root = (project in file(".")).
     inThisBuild(List(
       organization    := "com.example",
       scalaVersion    := "2.12.2",
-      resolvers += Seq("confluent" at "http://packages.confluent.io/maven/")
+      resolvers += "Confluent" at "http://packages.confluent.io/maven/"
     )),
     name := "sma",
     libraryDependencies ++= Seq(
