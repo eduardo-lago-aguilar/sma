@@ -8,10 +8,11 @@ import org.apache.avro.io.{BinaryEncoder, EncoderFactory}
 import org.apache.avro.specific.SpecificDatumWriter
 import org.apache.kafka.common.utils.Bytes
 import org.apache.kafka.common.utils.Bytes.wrap
+import sma.BytesSerializableMessage
 
 object DiggingMessages {
 
-  abstract class Digging(follower: String, interest: String) extends IndexedRecord {
+  abstract class Digging(val follower: String, interest: String) extends IndexedRecord with BytesSerializableMessage {
 
     def followee = interest.split("@")(0)
 
@@ -42,11 +43,12 @@ object DiggingMessages {
     }
 
     protected def write(encoder: BinaryEncoder): Unit
+
   }
 
   abstract class DiggingReply
 
-  case class Follow(follower: String, interest: String) extends Digging(follower: String, interest: String) {
+  case class Follow(override val follower: String, interest: String) extends Digging(follower: String, interest: String) {
 
     override def reply = FollowReply()
 
@@ -62,7 +64,7 @@ object DiggingMessages {
 
   case class FollowReply() extends DiggingReply
 
-  case class Forget(follower: String, interest: String) extends Digging(follower: String, interest: String) {
+  case class Forget(override val follower: String, interest: String) extends Digging(follower: String, interest: String) {
     override def reply = ForgetReply()
 
     override def mkString = s"forget request, follower: ${follower}, interest: ${interest}"
