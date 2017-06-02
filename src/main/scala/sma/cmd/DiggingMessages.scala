@@ -52,7 +52,7 @@ object DiggingMessages {
 
     override def reply = FollowReply()
 
-    override def mkString = s"follow request, follower: ${follower}, interest: ${interest}"
+    override def mkString = s"FOLLOW request, follower: ${follower}, interest: ${interest}"
 
     override def getSchema = AvroSchema[Follow]
 
@@ -67,7 +67,7 @@ object DiggingMessages {
   case class Forget(override val follower: String, interest: String) extends Digging(follower: String, interest: String) {
     override def reply = ForgetReply()
 
-    override def mkString = s"forget request, follower: ${follower}, interest: ${interest}"
+    override def mkString = s"FORGET request, follower: ${follower}, interest: ${interest}"
 
     override def getSchema = AvroSchema[Forget]
 
