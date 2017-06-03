@@ -24,17 +24,17 @@ trait Commands extends EventSourcing {
 
     implicit val timeout = Timeout(5 seconds)
 
-    path("boards" / Segment) {
-      interest =>
+    path("boards" / Segment / Segment) {
+      (interest, user) =>
         put {
-          onSuccess(digger ? Follow("user123", interest)) {
+          onSuccess(digger ? Follow(user, interest)) {
             case response: FollowReply =>
               complete(StatusCodes.OK, s"follow ack received!")
             case _ =>
               complete(StatusCodes.InternalServerError)
           }
         } ~ delete {
-          onSuccess(digger ? Forget("user123", interest)) {
+          onSuccess(digger ? Forget(user, interest)) {
             case response: ForgetReply =>
               complete(StatusCodes.OK, s"forget ack received!")
             case _ =>
