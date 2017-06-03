@@ -5,7 +5,7 @@ import akka.kafka.Subscriptions
 import akka.kafka.scaladsl.Consumer
 import akka.pattern.ask
 import akka.stream.scaladsl.Sink
-import sma.cmd.DiggingMessages.Follow
+import sma.cmd.DiggingMessages.Digging
 import sma.{Receiving, StreamWrapper}
 
 import scala.concurrent.duration._
@@ -24,9 +24,8 @@ class Twitter(val topic: String) extends Actor with ActorLogging with Receiving 
   println(s"--> [${self.path.name}] creating actor ")
 
   override def receive = {
-    case dig: Follow =>
-      log.info(s"--> [${self.path.name}] receiving following message ${dig.mkString}")
-      println(s"--> [${self.path.name}] receiving following message ${dig.mkString}")
+    case dig: Digging =>
+      log.info(s"--> [${self.path.name}] receiving ${dig.mkString}")
       sender() ! dig.reply
     case _ =>
       println(s"--> [${self.path.name}] receiving an unknown message")
@@ -37,7 +36,7 @@ class Twitter(val topic: String) extends Actor with ActorLogging with Receiving 
     println(s"--> [${self.path.name}] creating twitter stream")
     val processingActor = self
     val done = Consumer.plainSource(consumerSettings, Subscriptions.topics(topic))
-      .mapAsync(1)(msg => processingActor ? msg)
+      .mapAsync(1)(msg => processingActor ? Digging.deserialize(msg.value()))
       .runWith(Sink.ignore)
     done.onComplete {
       case Failure(ex) =>
