@@ -23,7 +23,7 @@ object DiggingMessages {
 
     def reply: DiggingReply
 
-    def mkString = {
+    def serialize = {
       s"${action}#${follower}!${interest}"
     }
 

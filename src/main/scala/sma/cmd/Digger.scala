@@ -17,7 +17,7 @@ class Digger extends Actor with ActorLogging with Committing {
     case message: Digging =>
       commit(message, message.digTopic)
 
-      log.info(s"--> [${self.path.name}] received ${message.mkString}")
+      log.info(s"--> [${self.path.name}] received ${message.serialize}")
 
       sender() ! message.reply
   }

@@ -6,7 +6,7 @@ import org.apache.kafka.common.serialization.StringSerializer
 
 
 trait StringSerializableMessage {
-  def mkString: String
+  def serialize: String
 }
 
 trait Committing extends EventSourcing {
@@ -15,5 +15,5 @@ trait Committing extends EventSourcing {
 
   def kafkaProducer = producerSettings.createKafkaProducer()
 
-  def kafkaProducerRecord(message: StringSerializableMessage, topic: String): ProducerRecord[String, String] = new ProducerRecord[String, String](topic, message.mkString)
+  def kafkaProducerRecord(message: StringSerializableMessage, topic: String): ProducerRecord[String, String] = new ProducerRecord[String, String](topic, message.serialize)
 }

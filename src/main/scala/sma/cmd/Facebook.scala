@@ -12,7 +12,7 @@ object Facebook {
 class Facebook extends Actor with ActorLogging {
   override def receive = {
     case f: Follow =>
-      log.info(s"@facebook following ${f.mkString}")
+      log.info(s"@facebook following ${f.serialize}")
       sender() ! f.reply
   }
 }
