@@ -7,7 +7,7 @@ import akka.pattern.ask
 import akka.stream.scaladsl.{Source, Sink}
 import sma.Redis.Interests
 import sma.cmd.DiggingMessages._
-import sma.{Receiving, StreamWrapper}
+import sma.{Committing, Receiving, StreamWrapper}
 
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
@@ -18,7 +18,7 @@ object Twitter {
   }
 }
 
-class Twitter(val topic: String) extends Actor with ActorLogging with Receiving {
+class Twitter(val topic: String) extends Actor with ActorLogging with Receiving with Committing {
 
   implicit val timeout = akka.util.Timeout(5 seconds)
 
@@ -46,6 +46,7 @@ class Twitter(val topic: String) extends Actor with ActorLogging with Receiving 
   private def streamFromTwitter(): Unit = {
     Source.fromFuture[Seq[String]](Interests(topic))
       .map(interest => interest.mkString.toUpperCase)
+      .runWith(Sink.foreach(tweet => kafkaProducer.send(kafkaProducerRecord(replyTopic(topic), topic, tweet))))
   }
 
   private def logMessages(followees: String): Unit = {
