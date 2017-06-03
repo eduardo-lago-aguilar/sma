@@ -8,7 +8,7 @@ object DiggingMessages {
     def deserialize(msg: String): Digging = {
       val Array(action, remaining) = msg.split("#")
       val Array(follower, interest) = remaining.split("!")
-      msg match {
+      action match {
         case "follow" => Follow(follower, interest)
         case "forget" => Forget(follower, interest)
       }
