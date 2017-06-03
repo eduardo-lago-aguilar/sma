@@ -18,6 +18,7 @@ lazy val root = (project in file(".")).
       "com.sksamuel.avro4s" %% "avro4s-core" % "1.6.4",
       "org.apache.avro" % "avro" % "1.7.7",
       "io.confluent" % "kafka-avro-serializer" % "1.0",
+      "com.github.etaty" %% "rediscala" % "1.8.0",
       "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % Test,
       "org.scalatest"     %% "scalatest"         % "3.0.1"         % Test
     )
