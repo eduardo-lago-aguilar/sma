@@ -17,7 +17,6 @@ class Digger extends Actor with ActorLogging with Committing {
     case message: Digging =>
       val topic = digTopic(message.follower, message.media)
       commit(message, topic)
-      wakeup(topic)
 
       log.info(s"--> [${self.path.name}] received ${message.mkString}")
 
@@ -28,5 +27,4 @@ class Digger extends Actor with ActorLogging with Committing {
     kafkaProducer.send(kafkaRecord(message, topic))
   }
 
-  def wakeup(topic: String) = StreamWrapperTwitter.create(system, topic)
 }

@@ -8,7 +8,8 @@ trait EventSourcing {
   implicit val materializer = ActorMaterializer()
   implicit val executionContext = system.dispatcher
 
-  def digTopic(follower: String, media: String): String = {
-    s"${follower}_at_${media}"
+  def digTopic(follower: String, network: String): String = {
+    s"${follower}_at_${network}"
   }
+
 }

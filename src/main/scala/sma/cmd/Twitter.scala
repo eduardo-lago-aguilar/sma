@@ -4,7 +4,7 @@ import akka.actor._
 import akka.kafka.Subscriptions
 import akka.kafka.scaladsl.Consumer
 import akka.stream.scaladsl.Sink
-import sma.Receiving
+import sma.{StreamWrapper, Receiving}
 import sma.cmd.DiggingMessages.Follow
 
 import akka.pattern.ask
@@ -21,7 +21,7 @@ class Twitter(val topic: String) extends Actor with ActorLogging with Receiving 
 
   implicit val timeout = akka.util.Timeout(5 seconds)
 
-  println(s"--> creating actor ${self.path.name}")
+  println(s"--> [${self.path.name}] creating actor ")
 
   override def receive = {
     case dig: Follow =>
@@ -34,7 +34,7 @@ class Twitter(val topic: String) extends Actor with ActorLogging with Receiving 
   }
 
   override def preStart: Unit = {
-    println("--> creating Twitter stream")
+    println(s"--> [${self.path.name}] creating twitter stream")
     val processingActor = self
     val done = Consumer.plainSource(consumerSettings, Subscriptions.topics(topic))
       .mapAsync(1)(msg => processingActor ? msg)
@@ -54,11 +54,11 @@ class Twitter(val topic: String) extends Actor with ActorLogging with Receiving 
   }
 }
 
-object StreamWrapperTwitter {
-  def create(implicit system: ActorSystem, childName: String): ActorRef = {
-    val name: String = s"supervisor_of_${childName}_${java.util.UUID.randomUUID.toString}"
+object StreamWrapperTwitter extends StreamWrapper {
+  override def create(implicit system: ActorSystem, childName: String): ActorRef = {
+    val name = s"supervisor_of_${childName}"
 
-    println(s"--> creating ${name}")
+    println(s"--> [${name}] creating supervisor")
 
     import akka.pattern.{Backoff, BackoffSupervisor}
 
