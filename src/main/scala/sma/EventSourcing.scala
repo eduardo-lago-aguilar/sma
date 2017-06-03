@@ -9,6 +9,8 @@ trait Topics {
   def digTopic(follower: String, network: String): String = {
     s"${follower}_at_${network}"
   }
+
+  def replyTopic(topic: String) = s"${topic}_reply"
 }
 
 trait EventSourcing extends Topics {
