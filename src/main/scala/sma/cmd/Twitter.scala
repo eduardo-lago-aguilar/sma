@@ -53,7 +53,7 @@ class Twitter(val topic: String) extends Actor with ActorLogging with Receiving 
 
   override def preStart: Unit = makeItReactive
 
-  override def postStop(): Unit = println(s"--> [${self.path.name}] actor stopped"
+  override def postStop(): Unit = println(s"--> [${self.path.name}] actor stopped")
 
   private def logMessages(followees: String): Unit = log.info(s"--> [${self.path.name}] receiving ${followees}")
 
