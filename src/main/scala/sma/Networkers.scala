@@ -1,24 +1,18 @@
 package sma
 
 import akka.actor.Props
+import akka.stream.scaladsl.Sink.foreach
+import akka.stream.scaladsl.Source.fromFuture
+import akka.stream.scaladsl.{Source, Sink}
 import sma.Redis._
 import sma.cmd.TwitterNetworker
 import sma.reactive.ReactiveStreamWrapper
 
 trait Networkers extends Receiving {
-  val networks = Seq("twitter")
-
   def wakeupNetworkers: Unit = {
-    smaUsers.foreach(users => {
-      for (user <- users) {
-        for (net <- networks) {
-          val topic: String = digTopic(user, net)
-          ReactiveStreamWrapper(system, topic, Props(new TwitterNetworker(topic)))
-          //          wake(replyTopic(topic))
-        }
-      }
-    })
+    fromFuture(smaUsers)
+      .runWith(foreach(users => Source(users.toVector)
+        .runWith(foreach(user => Source(networks.toVector)
+          .runWith(foreach(net => ReactiveStreamWrapper(system, digTopic(user, net), Props(new TwitterNetworker(digTopic(user, net))))))))))
   }
-
-
 }
