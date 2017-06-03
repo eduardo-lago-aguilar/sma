@@ -7,13 +7,12 @@ import akka.kafka.scaladsl.Consumer
 import akka.pattern.ask
 import akka.stream.scaladsl.Sink
 import org.apache.kafka.clients.consumer.ConsumerRecord
-import org.apache.kafka.common.utils.Bytes
 import sma.cmd.Commands
 
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
-case class ProcessMsg(msg: ConsumerRecord[String, Bytes])
+case class ProcessMsg(msg: ConsumerRecord[String, String])
 
 class StreamWrapperActor extends Actor with Receiving with ActorLogging {
 
