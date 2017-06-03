@@ -25,6 +25,8 @@ object DiggingMessages {
 
     override  def key: String = s"${follower}!${interest}"
 
+    def mkString = serialize
+
     def serialize = s"${action}#${key}"
 
     def digTopic: String = {
