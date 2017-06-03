@@ -1,29 +1,19 @@
 package sma
 
-import akka.actor.{ActorRef, ActorSystem}
+import akka.actor.Props
 import sma.Redis._
-import sma.WebServerHttpApp._
-import sma.cmd.StreamWrapperTwitter
-
-trait StreamWrapper {
-  def create(implicit system: ActorSystem, childName: String): ActorRef
-}
+import sma.cmd.TwitterNetworker
 
 trait Networkers extends Receiving {
   val networks = Seq("twitter")
-  val supervisors: Map[String, StreamWrapper] = Map(
-    ("twitter" -> StreamWrapperTwitter)
-  )
-
-  def wakeup(follower: String, network: String) = {
-    StreamWrapperTwitter.create(system, digTopic(follower, network))
-  }
 
   def wakeupNetworkers: Unit = {
     smaUsers.foreach(users => {
       for (user <- users) {
-        for ((net, streamWrapper) <- supervisors) {
-          wakeup(user, net)
+        for (net <- networks) {
+          val topic: String = digTopic(user, net)
+          ReactiveStreamWrapper(system, topic, Props(new TwitterNetworker(topic)))
+          //          wake(replyTopic(topic))
         }
       }
     })
