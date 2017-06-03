@@ -1,6 +1,8 @@
 package sma
 
 import akka.actor.{ActorRef, ActorSystem}
+import sma.Redis._
+import sma.WebServerHttpApp._
 import sma.cmd.StreamWrapperTwitter
 
 trait StreamWrapper {
@@ -16,5 +18,16 @@ trait Networkers extends Receiving {
   def wakeup(follower: String, network: String) = {
     StreamWrapperTwitter.create(system, digTopic(follower, network))
   }
+
+  def wakeupNetworkers: Unit = {
+    smaUsers.foreach(users => {
+      for (user <- users) {
+        for ((net, streamWrapper) <- supervisors) {
+          wakeup(user, net)
+        }
+      }
+    })
+  }
+
 
 }

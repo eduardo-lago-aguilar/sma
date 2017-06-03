@@ -16,14 +16,4 @@ object WebServerHttpApp extends HttpApp with App with Commands with Queries with
   startServer("localhost", 8080)   // This will start the server until the return key is pressed
 
   def routes = commandRoutes ~ queryRoutes
-
-  def wakeupNetworkers: Unit = {
-    smaUsers.foreach(users => {
-      for (user <- users) {
-        for ((net, streamWrapper) <- supervisors) {
-          wakeup(user, net)
-        }
-      }
-    })
-  }
 }
