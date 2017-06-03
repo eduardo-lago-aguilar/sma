@@ -3,13 +3,13 @@ package sma.cmd
 import akka.actor._
 import akka.kafka.Subscriptions
 import akka.kafka.scaladsl.Consumer
-import akka.stream.scaladsl.Sink
-import sma.{StreamWrapper, Receiving}
-import sma.cmd.DiggingMessages.Follow
-
 import akka.pattern.ask
+import akka.stream.scaladsl.Sink
+import sma.cmd.DiggingMessages.Follow
+import sma.{Receiving, StreamWrapper}
+
 import scala.concurrent.duration._
-import scala.util.{Success, Failure}
+import scala.util.{Failure, Success}
 
 object Twitter {
   def props(): Props = {
