@@ -24,7 +24,7 @@ class Digger extends Actor with ActorLogging with Committing {
   }
 
   def commit(message: Digging, topic: String) = {
-    kafkaProducer.send(kafkaRecord(message, topic))
+    kafkaProducer.send(kafkaProducerRecord(message, topic))
   }
 
 }
