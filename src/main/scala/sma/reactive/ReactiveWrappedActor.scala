@@ -10,6 +10,8 @@ import scala.concurrent.duration._
 
 trait ReactiveWrappedActor extends Actor with ActorLogging with EventSourcing {
   implicit val timeout = akka.util.Timeout(5 seconds)
+  val batchPeriod = 2 seconds
+  val batchSize = 1000
 
   println(s"--> [${self.path.name}] creating actor ")
 

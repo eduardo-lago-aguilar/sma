@@ -20,25 +20,48 @@ object TwitterNetworker {
   }
 }
 
+case class Heartbeat()
+
+case class HeartbeatReply()
+
 class TwitterNetworker(val topic: String) extends ReactiveWrappedActor with Receiving with Committing {
+
+  val heartbeatPeriod = 2 seconds
 
   override def receive = {
     case bulk: DiggingBulk =>
-      Source(bulk().toVector)
-        .runWith(Sink.foreach[Digging](proccess))
+      bulkProccess(bulk)
       sender() ! DiggingBulkReply()
-      log.info(s"--> [${self.path.name}] receiving ${bulk.serialize}")
+    case _: Heartbeat =>
       streamFromTwitter()
+      sender() ! HeartbeatReply()
+  }
+
+  override def preStart: Unit = {
+    makeItReactive
+    heartbeat
   }
 
   override def consume: Future[Done] = consumeAndBatchAsync
 
+  private def heartbeat: Unit = {
+    Source.tick(0 milliseconds, heartbeatPeriod, ())
+      .async
+      .runWith(Sink.foreach(_ => self ? Heartbeat()))
+  }
+
   private def consumeAndBatchAsync: Future[Done] = {
     Consumer.plainSource(consumerSettings, Subscriptions.topics(topic))
       .map(msg => Digging.deserialize(msg.value()))
-      .groupedWithin(100, 2 seconds)
+      .groupedWithin(batchSize, batchPeriod)
       .mapAsync(1)(bulk => self ? DiggingBulk(bulk))
       .runWith(Sink.ignore)
+  }
+
+  private def bulkProccess(bulk: DiggingBulk): Future[Done] = {
+    log.info(s"--> [${self.path.name}] receiving ${bulk.serialize}")
+    Source(bulk().toVector)
+      .runWith(Sink.foreach[Digging](proccess))
   }
 
   private def proccess(dig: Digging): Unit = {
@@ -49,6 +72,7 @@ class TwitterNetworker(val topic: String) extends ReactiveWrappedActor with Rece
   }
 
   private def streamFromTwitter(): Unit = {
+    log.info(s"--> [${self.path.name}] streaming from twitter ${topic}")
     Source.fromFuture[Seq[String]](Interests(topic))
       .map(interest => interest.mkString.toUpperCase)
       .runWith(Sink.foreach(tweet => kafkaProducer.send(kafkaProducerRecord(replyTopic(topic), topic, tweet))))
