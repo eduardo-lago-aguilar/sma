@@ -1,7 +1,7 @@
 package sma
 
 import akka.http.scaladsl.server.HttpApp
-import redis.RedisClient
+import sma.Redis.smaUsers
 import sma.cmd._
 import sma.qry.{Profile, Queries}
 
@@ -18,9 +18,7 @@ object WebServerHttpApp extends HttpApp with App with Commands with Queries with
   def routes = commandRoutes ~ queryRoutes
 
   def wakeupNetworkers: Unit = {
-    val redis = RedisClient()
-    val future = redis.smembers[String]("sma-users")
-    future.foreach(users => {
+    smaUsers.foreach(users => {
       for (user <- users) {
         for ((net, streamWrapper) <- supervisors) {
           wakeup(user, net)
