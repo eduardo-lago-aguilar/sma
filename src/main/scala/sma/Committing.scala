@@ -16,5 +16,7 @@ trait Committing extends EventSourcing {
 
   def kafkaProducer = producerSettings.createKafkaProducer()
 
-  def kafkaProducerRecord(message: StringSerializableMessage, topic: String): ProducerRecord[String, String] = new ProducerRecord[String, String](topic, message.key, message.serialize)
+  def kafkaProducerRecord(message: StringSerializableMessage, topic: String): ProducerRecord[String, String] = kafkaProducerRecord(topic, message.key, message.serialize)
+
+  def kafkaProducerRecord(topic: String, key: String, value: String): ProducerRecord[String, String] = new ProducerRecord[String, String](topic, key, value)
 }
