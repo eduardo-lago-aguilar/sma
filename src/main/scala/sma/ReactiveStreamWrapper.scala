@@ -21,8 +21,6 @@ object ReactiveStreamWrapper {
         randomFactor = 0.2
       )
     )
-    val supervisor = system.actorOf(supervisorProps, name = name)
-
-    supervisor
+    system.actorOf(supervisorProps, name = name)
   }
 }
