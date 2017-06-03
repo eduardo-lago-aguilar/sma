@@ -1,4 +1,4 @@
-package sma
+package sma.reactive
 
 import akka.actor.{ActorRef, ActorSystem, Props}
 

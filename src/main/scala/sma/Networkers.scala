@@ -3,6 +3,7 @@ package sma
 import akka.actor.Props
 import sma.Redis._
 import sma.cmd.TwitterNetworker
+import sma.reactive.ReactiveStreamWrapper
 
 trait Networkers extends Receiving {
   val networks = Seq("twitter")
