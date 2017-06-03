@@ -15,8 +15,7 @@ class Digger extends Actor with ActorLogging with Committing {
 
   override def receive = {
     case message: Digging =>
-      val topic = digTopic(message.follower, message.media)
-      commit(message, topic)
+      commit(message, message.digTopic)
 
       log.info(s"--> [${self.path.name}] received ${message.mkString}")
 

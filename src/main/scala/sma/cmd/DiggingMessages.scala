@@ -1,18 +1,21 @@
 package sma.cmd
 
-import java.io.ByteArrayOutputStream
-
-import com.sksamuel.avro4s.AvroSchema
-import org.apache.avro.generic.IndexedRecord
-import org.apache.avro.io.{BinaryEncoder, EncoderFactory}
-import org.apache.avro.specific.SpecificDatumWriter
-import org.apache.kafka.common.utils.Bytes
-import org.apache.kafka.common.utils.Bytes.wrap
-import sma.BytesSerializableMessage
+import sma.StringSerializableMessage
 
 object DiggingMessages {
 
-  abstract class Digging(val follower: String, interest: String) extends IndexedRecord with BytesSerializableMessage {
+  object Digging {
+    def deserialize(msg: String): Digging = {
+      val Array(action, remaining) = msg.split("#")
+      val Array(follower, interest) = remaining.split("!")
+      msg match {
+        case "follow" => Follow(follower, interest)
+        case "forget" => Forget(follower, interest)
+      }
+    }
+  }
+
+  abstract class Digging(follower: String, interest: String) extends StringSerializableMessage {
 
     def followee = interest.split("@")(0)
 
@@ -20,63 +23,34 @@ object DiggingMessages {
 
     def reply: DiggingReply
 
-    def mkString: String
-
-    def serialize: Bytes = {
-      val out = new ByteArrayOutputStream()
-      val encoder = EncoderFactory.get.binaryEncoder(out, null)
-      write(encoder)
-      encoder.flush
-      out.close
-      wrap(out.toByteArray)
+    def mkString = {
+      s"${action}#${follower}!${interest}"
     }
 
-    override def get(i: Int) = {
-      i match {
-        case 0 => follower
-        case 1 => interest
-      }
+    def digTopic: String = {
+      s"${follower}_at_${media}"
     }
 
-    override def put(i: Int, v: scala.Any) = {
-      // TODO: !
-    }
 
-    protected def write(encoder: BinaryEncoder): Unit
-
+    def action: String
   }
 
   abstract class DiggingReply
 
-  case class Follow(override val follower: String, interest: String) extends Digging(follower: String, interest: String) {
+  case class Follow(follower: String, interest: String) extends Digging(follower: String, interest: String) {
 
     override def reply = FollowReply()
 
-    override def mkString = s"FOLLOW request, follower: ${follower}, interest: ${interest}"
-
-    override def getSchema = AvroSchema[Follow]
-
-    protected override def write(encoder: BinaryEncoder): Unit = {
-      val writer = new SpecificDatumWriter[Follow](getSchema)
-      writer.write(this, encoder)
-    }
+    override def action = "follow"
   }
 
   case class FollowReply() extends DiggingReply
 
-  case class Forget(override val follower: String, interest: String) extends Digging(follower: String, interest: String) {
+  case class Forget(follower: String, interest: String) extends Digging(follower: String, interest: String) {
     override def reply = ForgetReply()
 
-    override def mkString = s"FORGET request, follower: ${follower}, interest: ${interest}"
-
-    override def getSchema = AvroSchema[Forget]
-
-    protected override def write(encoder: BinaryEncoder): Unit = {
-      val writer = new SpecificDatumWriter[Forget](getSchema)
-      writer.write(this, encoder)
-    }
+    override def action = "forget"
   }
 
   case class ForgetReply() extends DiggingReply
-
 }
