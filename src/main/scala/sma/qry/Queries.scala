@@ -30,7 +30,7 @@ trait Queries extends EventSourcing {
               reply.topics.foreach(topics => {
                 topics.foreach(topic => println(s"--> [${reply.interest}] is interested in ${topic}"))
               })
-              complete(StatusCodes.OK, reply.mkString)
+              complete(StatusCodes.OK, "ok")
             case _ =>
               complete(StatusCodes.InternalServerError)
           }

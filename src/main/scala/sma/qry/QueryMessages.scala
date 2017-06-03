@@ -1,7 +1,5 @@
 package sma.qry
 
-import sma.EventSourcing
-
 import scala.concurrent.Future
 
 object QueryMessages {
@@ -17,15 +15,5 @@ object QueryMessages {
     def mkString = s"topics request, follower: ${interest}"
   }
 
-  case class InterestReply(interest: String, topics: Future[Seq[String]]) extends EventSourcing {
-    def mkString = {
-      var str = ""
-      topics.foreach(topics => {
-        val t = topics.reduce((total, current) => s"${total}, ${current}")
-        str = s"${t}, ${str}"
-      })
-      str
-    }
-  }
-
+  case class InterestReply(interest: String, topics: Future[Seq[String]])
 }
