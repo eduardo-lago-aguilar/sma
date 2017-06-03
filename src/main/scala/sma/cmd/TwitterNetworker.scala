@@ -8,19 +8,19 @@ import akka.pattern.ask
 import akka.stream.scaladsl.{Source, Sink}
 import sma.Redis.Interests
 import sma.cmd.DiggingMessages._
-import sma.{Committing, Receiving, StreamWrapper}
+import sma.{Committing, Receiving}
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
-object Twitter {
+object TwitterNetworker {
   def props(): Props = {
-    Props(classOf[Twitter])
+    Props(classOf[TwitterNetworker])
   }
 }
 
-class Twitter(val topic: String) extends Actor with ActorLogging with Receiving with Committing {
+class TwitterNetworker(val topic: String) extends Actor with ActorLogging with Receiving with Committing {
 
   implicit val timeout = akka.util.Timeout(5 seconds)
 
@@ -77,25 +77,3 @@ class Twitter(val topic: String) extends Actor with ActorLogging with Receiving 
   }
 }
 
-object StreamWrapperTwitter extends StreamWrapper {
-  override def create(implicit system: ActorSystem, childName: String): ActorRef = {
-    val name = s"supervisor_of_${childName}"
-
-    println(s"--> [${name}] creating supervisor")
-
-    import akka.pattern.{Backoff, BackoffSupervisor}
-
-    val supervisorProps = BackoffSupervisor.props(
-      Backoff.onStop(
-        Props(new Twitter(childName)),
-        childName = childName,
-        minBackoff = 3 seconds,
-        maxBackoff = 30 seconds,
-        randomFactor = 0.2
-      )
-    )
-    val supervisor = system.actorOf(supervisorProps, name = name)
-
-    supervisor
-  }
-}
