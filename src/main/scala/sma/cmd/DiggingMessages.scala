@@ -19,7 +19,7 @@ object DiggingMessages {
 
     def followee = interest.split("@")(0)
 
-    def media = interest.split("@")(1)
+    def network = interest.split("@")(1)
 
     def reply: DiggingReply
 
@@ -28,7 +28,7 @@ object DiggingMessages {
     def serialize = s"${action}#${key}"
 
     def digTopic: String = {
-      s"${follower}_at_${media}"
+      s"${follower}_at_${network}"
     }
 
 
