@@ -9,7 +9,7 @@ import akka.stream.scaladsl.{Sink, Source}
 import sma.Redis.Interests
 import sma.cmd.DiggingMessages._
 import sma.reactive.ReactiveWrappedActor
-import sma.{Committing, Receiving}
+import sma.{Tweet, Committing, Receiving}
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -74,8 +74,8 @@ class TwitterNetworker(val topic: String) extends ReactiveWrappedActor with Rece
   private def streamFromTwitter(): Unit = {
     log.info(s"--> [${self.path.name}] streaming from twitter ${topic}")
     Source.fromFuture[Seq[String]](Interests(topic))
-      .map(interest => interest.mkString.toUpperCase)
-      .runWith(Sink.foreach(tweet => kafkaProducer.send(kafkaProducerRecord(replyTopic(topic), topic, tweet))))
+      .map(interest => Tweet(interest.mkString.toUpperCase))
+      .runWith(Sink.foreach(tweet => kafkaProducer.send(kafkaProducerRecord(replyTopic(topic), topic, tweet.serialize))))
   }
 }
 
