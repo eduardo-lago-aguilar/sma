@@ -9,6 +9,7 @@ object Redis extends Topics {
 
   object Interests {
     def apply(user: String, network: String) = redis.smembers[String](key(user, network))
+    def apply(topic: String) = redis.smembers[String](key(topic))
 
     def add(topic: String, interests: String*) = redis.sadd[String](key(topic), interests: _*)
 
