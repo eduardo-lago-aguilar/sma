@@ -5,8 +5,8 @@ import akka.kafka.Subscriptions
 import akka.kafka.scaladsl.Consumer
 import akka.pattern.ask
 import akka.stream.scaladsl.Sink
-import sma.Redis.Interests.{add, remove}
-import sma.cmd.DiggingMessages.{Digging, Forget, Follow}
+import sma.Redis.Interests
+import sma.cmd.DiggingMessages._
 import sma.{Receiving, StreamWrapper}
 
 import scala.concurrent.duration._
@@ -25,24 +25,32 @@ class Twitter(val topic: String) extends Actor with ActorLogging with Receiving 
   println(s"--> [${self.path.name}] creating actor ")
 
   override def receive = {
-    case dig: Follow =>
-      log.info(s"--> [${self.path.name}] receiving ${dig.serialize}")
-      add(dig.follower, dig.network, dig.interest)
-      sender() ! dig.reply
-    case dig: Forget =>
-      log.info(s"--> [${self.path.name}] receiving ${dig.serialize}")
-      remove(dig.follower, dig.network, dig.interest)
-      sender() ! dig.reply
+    case digVector: Vector[Follow] =>
+      val followees = digVector.map(v => v.followee)
+      Interests.add(topic, followees: _*)
+      sender() ! FollowReply()
+      logFollowees(followees, "follow")
+    case digVector: Vector[Forget] =>
+      val followees = digVector.map(v => v.followee)
+      Interests.remove(topic, followees: _*)
+      sender() ! ForgetReply()
+      logFollowees(followees, "forget")
     case _ =>
       println(s"--> [${self.path.name}] receiving an unknown message")
       sender() ! Some()
+  }
+
+  def logFollowees(followees: Vector[String], request: String): Unit = {
+    log.info(s"--> [${self.path.name}] receiving [${followees.reduce((t, c) => s"${c}, ${t}")}] ${request} request")
   }
 
   override def preStart: Unit = {
     println(s"--> [${self.path.name}] creating twitter stream")
     val processingActor = self
     val done = Consumer.plainSource(consumerSettings, Subscriptions.topics(topic))
-      .mapAsync(1)(msg => processingActor ? Digging.deserialize(msg.value()))
+      .map(msg => Digging.deserialize(msg.value()))
+      .groupedWithin(100, 2 seconds)
+      .mapAsync(1)(bulk => processingActor ? bulk)
       .runWith(Sink.ignore)
     done.onComplete {
       case Failure(ex) =>
