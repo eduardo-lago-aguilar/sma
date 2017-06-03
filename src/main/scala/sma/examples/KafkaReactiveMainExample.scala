@@ -1,4 +1,4 @@
-package sma
+package sma.examples
 
 import akka.actor._
 import akka.http.scaladsl.server.HttpApp
@@ -7,6 +7,7 @@ import akka.kafka.scaladsl.Consumer
 import akka.pattern.ask
 import akka.stream.scaladsl.Sink
 import org.apache.kafka.clients.consumer.ConsumerRecord
+import sma.Receiving
 import sma.cmd.Commands
 
 import scala.concurrent.duration._
