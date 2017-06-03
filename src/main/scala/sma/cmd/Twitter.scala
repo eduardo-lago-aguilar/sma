@@ -4,7 +4,7 @@ import akka.actor._
 import akka.kafka.Subscriptions
 import akka.kafka.scaladsl.Consumer
 import akka.pattern.ask
-import akka.stream.scaladsl.Sink
+import akka.stream.scaladsl.{Source, Sink}
 import sma.Redis.Interests
 import sma.cmd.DiggingMessages._
 import sma.{Receiving, StreamWrapper}
@@ -25,23 +25,31 @@ class Twitter(val topic: String) extends Actor with ActorLogging with Receiving 
   println(s"--> [${self.path.name}] creating actor ")
 
   override def receive = {
-    case digVector: Vector[Follow] =>
-      val followees = digVector.map(v => v.followee)
-      Interests.add(topic, followees: _*)
-      sender() ! FollowReply()
-      logFollowees(followees, "follow")
-    case digVector: Vector[Forget] =>
-      val followees = digVector.map(v => v.followee)
-      Interests.remove(topic, followees: _*)
-      sender() ! ForgetReply()
-      logFollowees(followees, "forget")
+    case bulk: DiggingBulk =>
+      Source(bulk().toVector)
+        .runWith(Sink.foreach[Digging](proccess))
+      sender() ! DiggingBulkReply()
+      logMessages(bulk.serialize)
+      streamFromTwitter()
     case _ =>
       println(s"--> [${self.path.name}] receiving an unknown message")
       sender() ! Some()
   }
 
-  def logFollowees(followees: Vector[String], request: String): Unit = {
-    log.info(s"--> [${self.path.name}] receiving [${followees.reduce((t, c) => s"${c}, ${t}")}] ${request} request")
+  private def proccess(dig: Digging): Unit = {
+    dig match {
+      case Follow(_, _) => Interests.add(topic, dig.followee)
+      case Forget(_, _) => Interests.remove(topic, dig.followee)
+    }
+  }
+
+  private def streamFromTwitter(): Unit = {
+    Source.fromFuture[Seq[String]](Interests(topic))
+      .map(interest => interest.mkString.toUpperCase)
+  }
+
+  private def logMessages(followees: String): Unit = {
+    log.info(s"--> [${self.path.name}] receiving ${followees}")
   }
 
   override def preStart: Unit = {
@@ -50,7 +58,7 @@ class Twitter(val topic: String) extends Actor with ActorLogging with Receiving 
     val done = Consumer.plainSource(consumerSettings, Subscriptions.topics(topic))
       .map(msg => Digging.deserialize(msg.value()))
       .groupedWithin(100, 2 seconds)
-      .mapAsync(1)(bulk => processingActor ? bulk)
+      .mapAsync(1)(bulk => processingActor ? DiggingBulk(bulk))
       .runWith(Sink.ignore)
     done.onComplete {
       case Failure(ex) =>
