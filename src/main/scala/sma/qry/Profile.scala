@@ -1,7 +1,8 @@
 package sma.qry
 
-import akka.actor.{Props, ActorLogging, Actor}
-import sma.qry.QueryMessages.Topics
+import akka.actor.{Actor, ActorLogging, Props}
+import sma.Redis
+import sma.qry.QueryMessages.Interests
 
 object Profile {
   def props(): Props = {
@@ -11,10 +12,9 @@ object Profile {
 
 class Profile extends Actor with ActorLogging {
   override def receive = {
-    case t: Topics =>
-
+    case t: Interests =>
       log.info(s"received ${t.mkString}")
-      sender() ! t.reply(Seq("#redbee", "#akka", "#tdd"))
+      sender() ! t.reply(Redis.Interests(t.user, t.network))
   }
 
 }

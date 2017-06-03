@@ -27,11 +27,11 @@ class Twitter(val topic: String) extends Actor with ActorLogging with Receiving 
   override def receive = {
     case dig: Follow =>
       log.info(s"--> [${self.path.name}] receiving ${dig.serialize}")
-      add(dig.follower, dig.media, dig.interest)
+      add(dig.follower, dig.network, dig.interest)
       sender() ! dig.reply
     case dig: Forget =>
       log.info(s"--> [${self.path.name}] receiving ${dig.serialize}")
-      remove(dig.follower, dig.media, dig.interest)
+      remove(dig.follower, dig.network, dig.interest)
       sender() ! dig.reply
     case _ =>
       println(s"--> [${self.path.name}] receiving an unknown message")
