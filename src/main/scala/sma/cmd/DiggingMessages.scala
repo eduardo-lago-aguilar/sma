@@ -55,4 +55,11 @@ object DiggingMessages {
   }
 
   case class ForgetReply() extends DiggingReply
+
+  case class DiggingBulk(messages: Seq[Digging]) {
+    def apply() = messages
+    def serialize = messages.mkString(", ")
+  }
+
+  case class DiggingBulkReply()
 }
