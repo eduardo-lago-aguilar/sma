@@ -5,7 +5,8 @@ import akka.kafka.Subscriptions
 import akka.kafka.scaladsl.Consumer
 import akka.pattern.ask
 import akka.stream.scaladsl.Sink
-import sma.cmd.DiggingMessages.Digging
+import sma.Redis.Interests.{add, remove}
+import sma.cmd.DiggingMessages.{Digging, Forget, Follow}
 import sma.{Receiving, StreamWrapper}
 
 import scala.concurrent.duration._
@@ -24,8 +25,13 @@ class Twitter(val topic: String) extends Actor with ActorLogging with Receiving 
   println(s"--> [${self.path.name}] creating actor ")
 
   override def receive = {
-    case dig: Digging =>
+    case dig: Follow =>
       log.info(s"--> [${self.path.name}] receiving ${dig.serialize}")
+      add(dig.follower, dig.media, dig.interest)
+      sender() ! dig.reply
+    case dig: Forget =>
+      log.info(s"--> [${self.path.name}] receiving ${dig.serialize}")
+      remove(dig.follower, dig.media, dig.interest)
       sender() ! dig.reply
     case _ =>
       println(s"--> [${self.path.name}] receiving an unknown message")
