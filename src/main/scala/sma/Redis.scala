@@ -9,11 +9,17 @@ object Redis extends Topics {
 
   object Interests {
     def apply(user: String, network: String) = redis.smembers[String](key(user, network))
-    def add(user: String, network: String, interest: String) = redis.sadd[String](key(user, network), interest)
-    def remove(user: String, network: String, interest: String) = redis.srem[String](key(user, network), interest)
 
-    private def key(user: String, network: String): String = {
-      s"interests_${digTopic(user, network)}"
+    def add(topic: String, interests: String*) = redis.sadd[String](key(topic), interests: _*)
+
+    def remove(topic: String, interests: String*) = redis.srem[String](key(topic), interests: _*)
+
+    def key(user: String, network: String): String = {
+      key(digTopic(user, network))
+    }
+
+    def key(topic: String): String = {
+      s"interests_${topic}"
     }
   }
 
