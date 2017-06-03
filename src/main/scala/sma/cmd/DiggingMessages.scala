@@ -23,9 +23,9 @@ object DiggingMessages {
 
     def reply: DiggingReply
 
-    def serialize = {
-      s"${action}#${follower}!${interest}"
-    }
+    override  def key: String = s"${follower}!${interest}"
+
+    def serialize = s"${action}#${key}"
 
     def digTopic: String = {
       s"${follower}_at_${media}"
