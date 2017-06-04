@@ -3,7 +3,8 @@ package sma
 import akka.kafka.ProducerSettings
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.{ByteArraySerializer, StringSerializer}
-import sma.msg.Tweet
+import sma.common.Json
+import sma.twitter.{TrackTerms, Tweet}
 
 
 trait StringSerializableMessage {
@@ -29,11 +30,8 @@ trait Committing extends EventSourcing {
   def twitterKafkaProducer = twitterProducerSettings.createKafkaProducer()
 
   def twitterProducerRecord(tweet: Tweet, topic: String) = {
-    // TODO: replace it by serializers
-//    val key = Json.ByteArray.encode(TweetTrackTerms(tweet.trackTerms))
-//    val value = Json.ByteArray.encode(tweet)
-    val key = Array[Byte]()
-    val value = Array[Byte]()
+    val key = Json.ByteArray.encode(TrackTerms(tweet.trackTerms))
+    val value = Json.ByteArray.encode(tweet)
     new ProducerRecord[Array[Byte], Array[Byte]](topic, key, value)
   }
 }

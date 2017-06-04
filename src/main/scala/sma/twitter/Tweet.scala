@@ -1,6 +1,6 @@
-package sma.msg
+package sma.twitter
 
-case class TweetTrackTerms(terms: Seq[String])
+case class TrackTerms(terms: Seq[String])
 
 case class Tweet(body: String, trackTerms: Seq[String], timestamp: Long)
 

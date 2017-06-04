@@ -1,16 +1,13 @@
-package sma.cmd
+package sma.twitter
 
 import akka.Done
 import akka.pattern.ask
 import akka.stream.scaladsl.Sink
-import org.apache.kafka.clients.consumer.ConsumerRecord
-import sma.msg.{TweetReply, Tweet}
 import sma.reactive.ReactiveWrappedActor
-import sma.Receiving
 
 import scala.concurrent.Future
 
-class TwitterFeeder(topic: String) extends ReactiveWrappedActor with Receiving {
+class TwitterFeeder(topic: String) extends ReactiveWrappedActor with Twitter {
 
   override def receive = {
     case tweet: Tweet =>
@@ -26,8 +23,5 @@ class TwitterFeeder(topic: String) extends ReactiveWrappedActor with Receiving {
       .runWith(Sink.ignore)
   }
 
-  private def tweet(record: ConsumerRecord[Array[Byte], Array[Byte]]): Tweet = {
-    Tweet("some_text", Seq("redbee", "linux"), System.currentTimeMillis()) // TODO: deserialize tweet here!
-  }
 
 }

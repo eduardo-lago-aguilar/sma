@@ -5,8 +5,8 @@ import akka.stream.scaladsl.Sink._
 import akka.stream.scaladsl.Source
 import akka.stream.scaladsl.Source._
 import sma.Redis._
-import sma.cmd.TwitterFeeder
 import sma.reactive.ReactiveStreamWrapper
+import sma.twitter.TwitterFeeder
 
 trait Feeders extends EventSourcing {
   def wakeupFeeders: Unit = {

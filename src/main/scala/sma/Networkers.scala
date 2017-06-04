@@ -5,8 +5,8 @@ import akka.stream.scaladsl.Sink.foreach
 import akka.stream.scaladsl.Source.fromFuture
 import akka.stream.scaladsl.{Source, Sink}
 import sma.Redis._
-import sma.cmd.TwitterNetworker
 import sma.reactive.ReactiveStreamWrapper
+import sma.twitter.TwitterNetworker
 
 trait Networkers extends EventSourcing {
   def wakeupNetworkers: Unit = {

@@ -1,4 +1,4 @@
-package sma.cmd
+package sma.twitter
 
 import akka.Done
 import akka.actor._
@@ -11,7 +11,6 @@ import sma.msg._
 import sma.reactive.ReactiveWrappedActor
 import sma.{Committing, Receiving}
 
-import scala.collection.immutable
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
