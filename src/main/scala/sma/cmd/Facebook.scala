@@ -1,8 +1,7 @@
 package sma.cmd
 
 import akka.actor.{Actor, ActorLogging, Props}
-import sma.msg.DiggingMessages
-import DiggingMessages.Follow
+import sma.msg.Follow
 
 object Facebook {
   def props(): Props = {

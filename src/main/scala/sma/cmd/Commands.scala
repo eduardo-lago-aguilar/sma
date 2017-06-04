@@ -11,8 +11,7 @@ import akka.http.scaladsl.server.directives.RouteDirectives.complete
 import akka.pattern.ask
 import akka.util.Timeout
 import sma.EventSourcing
-import sma.msg.DiggingMessages
-import DiggingMessages.{Follow, FollowReply, Forget, ForgetReply}
+import sma.msg.{ForgetReply, Forget, FollowReply, Follow}
 
 import scala.concurrent.duration._
 
