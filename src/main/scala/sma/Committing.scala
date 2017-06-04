@@ -3,6 +3,7 @@ package sma
 import akka.kafka.ProducerSettings
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.{ByteArraySerializer, StringSerializer}
+import sma.msg.Tweet
 
 
 trait StringSerializableMessage {

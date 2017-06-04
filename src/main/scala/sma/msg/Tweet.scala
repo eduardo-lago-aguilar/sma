@@ -1,4 +1,4 @@
-package sma
+package sma.msg
 
 case class TweetTrackTerms(terms: Seq[String])
 

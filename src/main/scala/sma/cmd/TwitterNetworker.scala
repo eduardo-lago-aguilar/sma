@@ -8,8 +8,9 @@ import akka.pattern.ask
 import akka.stream.scaladsl.{Sink, Source}
 import sma.Redis.Interests
 import sma.cmd.DiggingMessages._
+import sma.msg.Tweet
 import sma.reactive.ReactiveWrappedActor
-import sma.{Tweet, Committing, Receiving}
+import sma.{Committing, Receiving}
 
 import scala.collection.immutable
 import scala.concurrent.Future

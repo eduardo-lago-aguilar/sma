@@ -4,8 +4,9 @@ import akka.Done
 import akka.pattern.ask
 import akka.stream.scaladsl.Sink
 import org.apache.kafka.clients.consumer.ConsumerRecord
+import sma.msg.{TweetReply, Tweet}
 import sma.reactive.ReactiveWrappedActor
-import sma.{Receiving, Tweet, TweetReply}
+import sma.Receiving
 
 import scala.concurrent.Future
 
