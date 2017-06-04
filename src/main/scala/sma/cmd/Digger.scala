@@ -2,7 +2,7 @@ package sma.cmd
 
 import akka.actor.{Actor, ActorLogging, Props}
 import sma.Committing
-import sma.msg.Digging
+import sma.msg.{DiggingReply, Digging}
 
 
 object Digger {
@@ -17,13 +17,13 @@ class Digger extends Actor with ActorLogging with Committing {
     case message: Digging =>
       commit(message, message.digTopic)
 
-      log.info(s"--> [${self.path.name}] received ${message.serialize}")
+      log.info(s"--> [${self.path.name}] received ${message.mkString}")
 
-      sender() ! message.reply
+      sender() ! DiggingReply()
   }
 
   def commit(message: Digging, topic: String) = {
-    kafkaProducer.send(kafkaProducerRecord(message, topic))
+    kafkaProducer.send(diggingProducerRecord(message, topic))
   }
 
 }

@@ -7,6 +7,7 @@ import akka.kafka.scaladsl.Consumer
 import akka.pattern.ask
 import akka.stream.scaladsl.{Sink, Source}
 import sma.Redis.Interests
+import sma.common.Json
 import sma.msg._
 import sma.reactive.ReactiveWrappedActor
 import sma.{Committing, Receiving}
@@ -46,7 +47,7 @@ class TwitterNetworker(val topic: String) extends ReactiveWrappedActor with Rece
 
   private def consumeAndBatchAsync: Future[Done] = {
     Consumer.plainSource(consumerSettings, Subscriptions.topics(topic))
-      .map(msg => Digging.deserialize(msg.value()))
+      .map(record => digging(record))
       .groupedWithin(batchSize, batchPeriod)
       .mapAsync(1)(bulk => self ? DiggingBulk(bulk))
       .runWith(Sink.ignore)
@@ -59,9 +60,9 @@ class TwitterNetworker(val topic: String) extends ReactiveWrappedActor with Rece
   }
 
   private def proccess(dig: Digging): Unit = {
-    dig match {
-      case Follow(_, _) => Interests.add(topic, dig.followee)
-      case Forget(_, _) => Interests.remove(topic, dig.followee)
+    dig.action match {
+      case "follow" => Interests.add(topic, dig.followee)
+      case "forget" => Interests.remove(topic, dig.followee)
     }
   }
 
@@ -78,5 +79,10 @@ class TwitterNetworker(val topic: String) extends ReactiveWrappedActor with Rece
     }))
 
   }
+
+  private def digging(record: ConsumerRecordType): Digging = {
+    Json.ByteArray.decode[Digging](record.value())
+  }
+
 }
 

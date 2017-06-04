@@ -11,7 +11,7 @@ import akka.http.scaladsl.server.directives.RouteDirectives.complete
 import akka.pattern.ask
 import akka.util.Timeout
 import sma.EventSourcing
-import sma.msg.{ForgetReply, Forget, FollowReply, Follow}
+import sma.msg.{DiggingReply, Digging}
 
 import scala.concurrent.duration._
 
@@ -27,15 +27,15 @@ trait Commands extends EventSourcing {
     path("boards" / Segment / Segment) {
       (interest, user) =>
         put {
-          onSuccess(digger ? Follow(user, interest)) {
-            case response: FollowReply =>
+          onSuccess(digger ? Digging(user, interest, "follow")) {
+            case response: DiggingReply =>
               complete(StatusCodes.OK, s"follow ack received!")
             case _ =>
               complete(StatusCodes.InternalServerError)
           }
         } ~ delete {
-          onSuccess(digger ? Forget(user, interest)) {
-            case response: ForgetReply =>
+          onSuccess(digger ? Digging(user, interest, "forget")) {
+            case response: DiggingReply =>
               complete(StatusCodes.OK, s"forget ack received!")
             case _ =>
               complete(StatusCodes.InternalServerError)
