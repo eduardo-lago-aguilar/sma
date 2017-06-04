@@ -11,14 +11,9 @@ import sma.cmd.DiggingMessages._
 import sma.reactive.ReactiveWrappedActor
 import sma.{Tweet, Committing, Receiving}
 
+import scala.collection.immutable
 import scala.concurrent.Future
 import scala.concurrent.duration._
-
-object TwitterNetworker {
-  def props(): Props = {
-    Props(classOf[TwitterNetworker])
-  }
-}
 
 case class Heartbeat()
 
@@ -73,9 +68,16 @@ class TwitterNetworker(val topic: String) extends ReactiveWrappedActor with Rece
 
   private def streamFromTwitter(): Unit = {
     log.info(s"--> [${self.path.name}] streaming from twitter ${topic}")
-    Source.fromFuture[Seq[String]](Interests(topic))
-      .map(interest => Tweet(interest.mkString.toUpperCase))
-      .runWith(Sink.foreach(tweet => kafkaProducer.send(kafkaProducerRecord(replyTopic(topic), topic, tweet.serialize))))
+    Source.fromFuture(Interests(topic)).runWith(Sink.foreach(trackTerms => {
+
+      // TODO: bring them from twitter instead !
+      val tweets: Vector[String] = trackTerms.toVector.map(t => t.toUpperCase)
+
+      Source(tweets)
+        .map(tweet => Tweet(tweet, trackTerms.sorted, timestamp))
+        .runWith(Sink.foreach(tweet => twitterKafkaProducer.send(twitterProducerRecord(tweet, replyTopic(topic)))))
+    }))
+
   }
 }
 
