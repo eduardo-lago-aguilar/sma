@@ -13,9 +13,13 @@ trait Topics {
   }
 
   def replyTopic(topic: String) = s"${topic}_reply"
+
+  val bootstrapServers: String = "localhost:9092"
 }
 
 trait EventSourcing extends Topics {
   implicit val materializer = ActorMaterializer()
   implicit val executionContext = system.dispatcher
+
+  def timestamp: Long = System.currentTimeMillis()
 }
