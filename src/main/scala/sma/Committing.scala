@@ -14,9 +14,7 @@ trait Committing extends EventSourcing {
   val producerSettings = ProducerSettings(system, keySerializer, valueSerializer)
     .withBootstrapServers(bootstrapServers)
 
-  def kafkaProducer = producerSettings.createKafkaProducer()
-
-  def kafkaProducerRecord(topic: String, key: String, value: String): ProducerRecord[String, String] = new ProducerRecord[String, String](topic, key, value)
+  val kafkaProducer = producerSettings.createKafkaProducer()
 
   def diggingProducerRecord(dig: Digging, topic: String) = {
     val key = Json.ByteArray.encode(dig.key)
@@ -24,15 +22,4 @@ trait Committing extends EventSourcing {
     new ProducerRecord[Array[Byte], Array[Byte]](topic, key, value)
   }
 
-  // twitter specific
-  val twitterProducerSettings = ProducerSettings(system, keySerializer, valueSerializer)
-    .withBootstrapServers(bootstrapServers)
-
-  def twitterKafkaProducer = twitterProducerSettings.createKafkaProducer()
-
-  def twitterProducerRecord(tweet: Tweet, topic: String) = {
-    val key = Json.ByteArray.encode(TrackTerms(tweet.trackTerms))
-    val value = Json.ByteArray.encode(tweet)
-    new ProducerRecord[Array[Byte], Array[Byte]](topic, key, value)
-  }
 }

@@ -6,6 +6,7 @@ import akka.kafka.Subscriptions
 import akka.kafka.scaladsl.Consumer
 import akka.pattern.ask
 import akka.stream.scaladsl.{Sink, Source}
+import org.apache.kafka.clients.producer.ProducerRecord
 import sma.Redis.Interests
 import sma.common.Json
 import sma.msg._
@@ -75,9 +76,15 @@ class TwitterNetworker(val topic: String) extends ReactiveWrappedActor with Rece
 
       Source(tweets)
         .map(tweet => Tweet(tweet, trackTerms.sorted, timestamp))
-        .runWith(Sink.foreach(tweet => twitterKafkaProducer.send(twitterProducerRecord(tweet, replyTopic(topic)))))
+        .runWith(Sink.foreach(tweet => kafkaProducer.send(twitterProducerRecord(tweet, replyTopic(topic)))))
     }))
 
+  }
+
+  private def twitterProducerRecord(tweet: Tweet, topic: String) = {
+    val key = Json.ByteArray.encode(TrackTerms(tweet.trackTerms))
+    val value = Json.ByteArray.encode(tweet)
+    new ProducerRecord[Array[Byte], Array[Byte]](topic, key, value)
   }
 
   private def digging(record: ConsumerRecordType): Digging = {
