@@ -1,4 +1,4 @@
-package sma.qry
+package sma.http
 
 import akka.actor.ActorRef
 import akka.http.scaladsl.model.StatusCodes
@@ -9,8 +9,10 @@ import akka.http.scaladsl.server.directives.PathDirectives.path
 import akka.http.scaladsl.server.directives.RouteDirectives.complete
 import akka.pattern.ask
 import akka.util.Timeout
-import sma.EventSourcing
-import sma.qry.QueryMessages.{InterestReply, Interests}
+import sma.storing.Redis
+import Redis.InterestsStore
+import sma.eventsourcing.EventSourcing
+import sma.feeding.InterestReply
 
 import scala.concurrent.duration._
 
@@ -25,7 +27,7 @@ trait Queries extends EventSourcing {
     path("interests" / Segment) {
       interest =>
         get {
-          onSuccess(profile ? Interests(interest)) {
+          onSuccess(profile ? InterestsStore(interest)) {
             case reply: InterestReply =>
               reply.topics.foreach(topics => {
                 topics.foreach(topic => println(s"--> [${reply.interest}] is interested in ${topic}"))

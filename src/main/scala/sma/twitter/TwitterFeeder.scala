@@ -3,8 +3,8 @@ package sma.twitter
 import akka.Done
 import akka.pattern.ask
 import akka.stream.scaladsl.Sink
-import sma.Receiving
-import sma.common.Json
+import sma.json.Json
+import sma.eventsourcing.Receiving
 import sma.reactive.ReactiveWrappedActor
 
 import scala.concurrent.Future

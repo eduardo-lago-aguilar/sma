@@ -7,11 +7,12 @@ import akka.kafka.scaladsl.Consumer
 import akka.pattern.ask
 import akka.stream.scaladsl.{Sink, Source}
 import org.apache.kafka.clients.producer.ProducerRecord
-import sma.Redis.Interests
-import sma.common.Json
-import sma.msg._
+import sma.storing.Redis
+import Redis.InterestsStore
+import sma.json.Json
+import sma.digging.{DiggingBulkReply, DiggingBulk, Digging}
+import sma.eventsourcing.{Receiving, Committing}
 import sma.reactive.ReactiveWrappedActor
-import sma.{Committing, Receiving}
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -62,21 +63,21 @@ class TwitterNetworker(val topic: String) extends ReactiveWrappedActor with Rece
 
   private def proccess(dig: Digging): Unit = {
     dig.action match {
-      case "follow" => Interests.add(topic, dig.followee)
-      case "forget" => Interests.remove(topic, dig.followee)
+      case "follow" => InterestsStore.add(topic, dig.followee)
+      case "forget" => InterestsStore.remove(topic, dig.followee)
     }
   }
 
   private def streamFromTwitter(): Unit = {
     log.info(s"--> [${self.path.name}] streaming from twitter ${topic}")
-    Source.fromFuture(Interests(topic)).runWith(Sink.foreach(trackTerms => {
+    Source.fromFuture(InterestsStore(topic)).runWith(Sink.foreach(trackTerms => {
 
       // TODO: bring them from twitter instead !
       val tweets: Vector[String] = trackTerms.toVector.map(t => t.toUpperCase)
 
       Source(tweets)
         .map(tweet => Tweet(tweet, trackTerms.sorted, timestamp))
-        .runWith(Sink.foreach(tweet => kafkaProducer.send(twitterProducerRecord(tweet, replyTopic(topic)))))
+        .runWith(Sink.foreach(tweet => producer.send(twitterProducerRecord(tweet, replyTopic(topic)))))
     }))
 
   }

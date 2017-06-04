@@ -1,11 +1,12 @@
-package sma
+package sma.booting
 
 import akka.actor.Props
 import akka.stream.scaladsl.Sink._
 import akka.stream.scaladsl.Source
 import akka.stream.scaladsl.Source._
-import sma.Redis._
+import sma.eventsourcing.EventSourcing
 import sma.reactive.ReactiveStreamWrapper
+import sma.storing.Redis._
 import sma.twitter.TwitterFeeder
 
 trait Feeders extends EventSourcing {

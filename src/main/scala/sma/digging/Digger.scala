@@ -1,11 +1,9 @@
-package sma.cmd
+package sma.digging
 
 import akka.actor.{Actor, ActorLogging, Props}
 import org.apache.kafka.clients.producer.ProducerRecord
-import sma.Committing
-import sma.common.Json
-import sma.msg.{DiggingReply, Digging}
-
+import sma.json.Json
+import sma.eventsourcing.Committing
 
 object Digger {
   def props(): Props = {
@@ -17,7 +15,7 @@ class Digger extends Actor with ActorLogging with Committing {
 
   override def receive = {
     case message: Digging =>
-      commit(message, message.digTopic)
+      commit(message, digTopic(message.follower, message.network))
 
       log.info(s"--> [${self.path.name}] received ${message.mkString}")
 
@@ -25,7 +23,7 @@ class Digger extends Actor with ActorLogging with Committing {
   }
 
   def commit(message: Digging, topic: String) = {
-    kafkaProducer.send(diggingProducerRecord(message, topic))
+    producer.send(diggingProducerRecord(message, topic))
   }
 
   private def diggingProducerRecord(dig: Digging, topic: String) = {

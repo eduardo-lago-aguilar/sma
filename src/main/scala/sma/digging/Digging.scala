@@ -1,4 +1,4 @@
-package sma.msg
+package sma.digging
 
 case class Digging(follower: String, interest: String, action: String) {
 
@@ -9,11 +9,6 @@ case class Digging(follower: String, interest: String, action: String) {
   def key: String = s"${follower}!${interest}"
 
   def mkString = key
-
-  // TODO: DRY!
-  def digTopic: String = {
-    s"${follower}_at_${network}"
-  }
 
 }
 

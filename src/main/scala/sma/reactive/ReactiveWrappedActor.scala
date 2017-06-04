@@ -2,7 +2,7 @@ package sma.reactive
 
 import akka.Done
 import akka.actor.{Actor, PoisonPill, ActorLogging}
-import sma.EventSourcing
+import sma.eventsourcing.EventSourcing
 
 import scala.concurrent.Future
 import scala.util.{Success, Failure}

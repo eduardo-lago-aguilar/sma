@@ -1,4 +1,4 @@
-package sma.cmd
+package sma.http
 
 import akka.actor.ActorRef
 import akka.http.scaladsl.model.StatusCodes
@@ -10,8 +10,8 @@ import akka.http.scaladsl.server.directives.PathDirectives.path
 import akka.http.scaladsl.server.directives.RouteDirectives.complete
 import akka.pattern.ask
 import akka.util.Timeout
-import sma.EventSourcing
-import sma.msg.{DiggingReply, Digging}
+import sma.digging.{DiggingReply, Digging}
+import sma.eventsourcing.EventSourcing
 
 import scala.concurrent.duration._
 
