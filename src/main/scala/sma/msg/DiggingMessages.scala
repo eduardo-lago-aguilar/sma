@@ -1,4 +1,4 @@
-package sma.cmd
+package sma.msg
 
 import sma.StringSerializableMessage
 

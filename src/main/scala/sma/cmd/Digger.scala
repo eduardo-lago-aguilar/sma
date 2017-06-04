@@ -2,7 +2,8 @@ package sma.cmd
 
 import akka.actor.{Actor, ActorLogging, Props}
 import sma.Committing
-import sma.cmd.DiggingMessages._
+import sma.msg.DiggingMessages
+import DiggingMessages._
 
 
 object Digger {

@@ -7,7 +7,8 @@ import akka.kafka.scaladsl.Consumer
 import akka.pattern.ask
 import akka.stream.scaladsl.{Sink, Source}
 import sma.Redis.Interests
-import sma.cmd.DiggingMessages._
+import sma.msg.{DiggingMessages, Tweet}
+import DiggingMessages._
 import sma.msg.Tweet
 import sma.reactive.ReactiveWrappedActor
 import sma.{Committing, Receiving}
