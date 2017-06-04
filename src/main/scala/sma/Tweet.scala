@@ -1,9 +1,7 @@
 package sma
 
-case class Tweet(body: String) extends StringSerializableMessage {
-  override def key = null
+case class TweetTrackTerms(terms: Seq[String])
 
-  override def serialize = body
-}
+case class Tweet(body: String, trackTerms: Seq[String], timestamp: Long)
 
 case class TweetReply()
