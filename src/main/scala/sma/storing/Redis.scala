@@ -8,7 +8,7 @@ object Redis extends Topics {
 
   def smaUsers = redis.smembers[String]("sma-users")
 
-  object InterestsStore {
+  object TrackingTermsStore {
     // retrieve
     def apply(user: String, network: String) = redis.smembers[String](key(user, network))
     def apply(topic: String) = redis.smembers[String](key(topic))

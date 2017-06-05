@@ -36,13 +36,14 @@ class TwitterNetworker(val topic: String) extends DiggingReactive(topic) with Co
   }
 
   private def streamFromTwitter(): Unit = {
-    log.info(s"--> [${self.path.name}] streaming from twitter to |${trackingTermsTopic}| w/ terms: (${trackingTerms.mkString(", ")})")
+    val ttt = trackingTermsTopic(replyTopic(topic), trackingTerms.toSeq)
+    log.info(s"--> [${self.path.name}] streaming from twitter to |${ttt}| w/ terms: (${trackingTerms.mkString(", ")})")
 
 
     // TODO: bring them from twitter instead !
     Source(trackingTerms.toVector)
       .map(term => Tweet(term.toUpperCase, trackingTerms.toSeq, timestamp))
-      .runWith(Sink.foreach(tweet => producer.send(twitterProducerRecord(tweet, trackingTermsTopic))))
+      .runWith(Sink.foreach(tweet => producer.send(twitterProducerRecord(tweet, ttt))))
   }
 
   private def twitterProducerRecord(tweet: Tweet, targetTopic: String) = {
@@ -50,8 +51,6 @@ class TwitterNetworker(val topic: String) extends DiggingReactive(topic) with Co
     val value = Json.encode(tweet)
     new ProducerRecord[Array[Byte], Array[Byte]](targetTopic, key, value)
   }
-
-  def trackingTermsTopic: String = s"${replyTopic(topic)}_${sha256(trackingTerms.toVector)}"
 
 }
 

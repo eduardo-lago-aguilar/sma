@@ -1,10 +1,12 @@
 package sma.feeding
 
-case class RetrieveTrackingTerms(userAtNetwork: String) {
+import sma.eventsourcing.Topics
 
-  def user = userAtNetwork.split("@")(0)
+case class RetrieveTrackingTerms(userAtNetwork: String) extends Topics {
 
-  def network = userAtNetwork.split("@")(1)
+  def user = splittingUserAt(userAtNetwork)(0)
+
+  def network = splittingUserAt(userAtNetwork)(1)
 
   def mkString = s"topics request, follower: ${userAtNetwork}"
 }

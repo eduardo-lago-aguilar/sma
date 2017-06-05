@@ -1,10 +1,12 @@
 package sma.digging
 
-case class Digging(follower: String, interest: String, action: String) {
+import sma.eventsourcing.Topics
 
-  def followee = interest.split("@")(0)
+case class Digging(follower: String, interest: String, action: String) extends Topics {
 
-  def network = interest.split("@")(1)
+  def term = splittingTermAt(interest)(0)
+
+  def network = splittingTermAt(interest)(1)
 
   def key: String = s"${follower}!${interest}"
 

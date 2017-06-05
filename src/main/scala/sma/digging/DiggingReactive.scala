@@ -9,7 +9,7 @@ import sma.json.Json
 import sma.reactive.ReactiveWrappedActor
 import akka.pattern.ask
 import sma.storing.Redis
-import sma.storing.Redis.InterestsStore
+import sma.storing.Redis.TrackingTermsStore
 
 import scala.collection.immutable.SortedSet
 import scala.concurrent.Future
@@ -38,15 +38,15 @@ abstract class DiggingReactive(topic: String) extends ReactiveWrappedActor with 
   private def digProccess(dig: Digging, storing: Boolean = false): Unit = {
     dig.action match {
       case "follow" => {
-        trackingTerms += dig.followee
+        trackingTerms += dig.term
         if (storing) {
-          InterestsStore.add(topic, dig.followee)
+          TrackingTermsStore.add(topic, dig.term)
         }
       }
       case "forget" => {
-        trackingTerms -= dig.followee
+        trackingTerms -= dig.term
         if(storing) {
-          InterestsStore.remove(topic, dig.followee)
+          TrackingTermsStore.remove(topic, dig.term)
         }
       }
     }
