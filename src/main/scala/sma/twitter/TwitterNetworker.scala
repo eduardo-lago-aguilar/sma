@@ -1,42 +1,31 @@
 package sma.twitter
 
-import akka.Done
 import akka.actor._
-import akka.kafka.Subscriptions
-import akka.kafka.scaladsl.Consumer
 import akka.pattern.ask
 import akka.stream.scaladsl.{Sink, Source}
 import org.apache.kafka.clients.producer.ProducerRecord
-import sma.storing.Redis
-import Redis.InterestsStore
+import sma.digging.{BulkDigging, DiggingReactive}
+import sma.eventsourcing.Committing
 import sma.json.Json
-import sma.digging.{BulkDiggingReply, BulkDigging, Digging}
-import sma.eventsourcing.{Receiving, Committing}
-import sma.reactive.ReactiveWrappedActor
 
-import scala.concurrent.Future
 import scala.concurrent.duration._
 
-class TwitterNetworker(val topic: String) extends ReactiveWrappedActor with Receiving with Committing {
+class TwitterNetworker(val topic: String) extends DiggingReactive(topic) with Committing {
 
   val heartbeatPeriod = 2 seconds
 
   override def receive = {
-    case bulk: BulkDigging =>
-      receiving(bulk.serialize)
-      bulkProccess(bulk)
-      sender() ! BulkDiggingReply()
-    case _: Heartbeat =>
+    case heartbeat: Heartbeat =>
       streamFromTwitter()
       sender() ! HeartbeatReply()
+    case bulk: BulkDigging =>
+      super.proccess(bulk)
   }
 
   override def preStart: Unit = {
-    makeItReactive
     heartbeat
+    super.preStart
   }
-
-  override def consume: Future[Done] = consumeAndBatchAsync
 
   private def heartbeat: Unit = {
     Source.tick(0 milliseconds, heartbeatPeriod, ())
@@ -44,48 +33,19 @@ class TwitterNetworker(val topic: String) extends ReactiveWrappedActor with Rece
       .runWith(Sink.foreach(_ => self ? Heartbeat()))
   }
 
-  private def consumeAndBatchAsync: Future[Done] = {
-    Consumer.plainSource(consumerSettings, Subscriptions.topics(topic))
-      .map(record => digging(record))
-      .groupedWithin(batchSize, batchPeriod)
-      .mapAsync(1)(bulk => self ? BulkDigging(bulk))
-      .runWith(Sink.ignore)
-  }
-
-  private def bulkProccess(bulk: BulkDigging): Future[Done] = {
-    Source(bulk().toVector)
-      .runWith(Sink.foreach[Digging](proccess))
-  }
-
-  private def proccess(dig: Digging): Unit = {
-    dig.action match {
-      case "follow" => InterestsStore.add(topic, dig.followee)
-      case "forget" => InterestsStore.remove(topic, dig.followee)
-    }
-  }
-
   private def streamFromTwitter(): Unit = {
     log.info(s"--> [${self.path.name}] streaming from twitter to |${replyTopic(topic)}|")
-    Source.fromFuture(InterestsStore(topic)).runWith(Sink.foreach(trackTerms => {
 
-      // TODO: bring them from twitter instead !
-      val tweets: Vector[String] = trackTerms.toVector.map(t => t.toUpperCase)
-
-      Source(tweets)
-        .map(tweet => Tweet(tweet, trackTerms.sorted, timestamp))
-        .runWith(Sink.foreach(tweet => producer.send(twitterProducerRecord(tweet, replyTopic(topic)))))
-    }))
-
+    // TODO: bring them from twitter instead !
+    Source(trackingTerms.toVector)
+      .map(term => Tweet(term.toUpperCase, trackingTerms.toSeq, timestamp))
+      .runWith(Sink.foreach(tweet => producer.send(twitterProducerRecord(tweet, replyTopic(topic)))))
   }
 
   private def twitterProducerRecord(tweet: Tweet, topic: String) = {
     val key = Json.encode(TrackingTerms(tweet.trackingTerms))
     val value = Json.encode(tweet)
     new ProducerRecord[Array[Byte], Array[Byte]](topic, key, value)
-  }
-
-  private def digging(record: ConsumerRecordType): Digging = {
-    Json.decode[Digging](record.value())
   }
 
 }
