@@ -8,17 +8,16 @@ import akka.http.scaladsl.server.directives.RouteDirectives.complete
 import akka.util.Timeout
 import sma.eventsourcing.{EventSourcing, ProfileActors}
 import sma.feeding.RetrieveTrackingTerms
-import sma.storing.Redis.TrackingTermsStore
+import sma.storing.Redis.{MessagesStore, TrackingTermsStore}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
 trait Queries extends EventSourcing with ProfileActors {
 
+  implicit val timeout = Timeout(5 seconds)
+
   val queryRoutes: Route = {
-
-    implicit val timeout = Timeout(5 seconds)
-
     path("interests" / Segment) {
       userAtNetwork =>
         get {
@@ -29,11 +28,17 @@ trait Queries extends EventSourcing with ProfileActors {
         get {
           val terms = trackingTerms(timeout, userAtNetwork)
           val ttt = trackingTermsTopic(replyTopic(digTopic(userAtNetwork)), terms)
-          complete(StatusCodes.OK, terms.mkString(", "))
+          complete(StatusCodes.OK, board(userAtNetwork).mkString(", "))
         }
     }
 
   }
 
-  def trackingTerms(timeout: Timeout, userAtNetwork: String): Seq[String] = Await.result(TrackingTermsStore(digTopic(userAtNetwork)), timeout.duration)
+  def trackingTerms(timeout: Timeout, userAtNetwork: String): Seq[String] = Await.result(TrackingTermsStore(digTopic(userAtNetwork)), timeout.duration).sorted
+
+  def board(userAtNetwork: String) = {
+    val terms = trackingTerms(timeout, userAtNetwork)
+    val ttt = trackingTermsTopic(replyTopic(digTopic(userAtNetwork)), terms)
+    Await.result(MessagesStore(ttt), timeout.duration)
+  }
 }

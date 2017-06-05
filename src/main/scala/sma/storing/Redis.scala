@@ -10,11 +10,11 @@ object Redis extends Topics {
 
   object TrackingTermsStore {
     // retrieve
-    def apply(user: String, network: String) = redis.smembers[String](key(user, network))
-    def apply(topic: String) = redis.smembers[String](key(topic))
+    def apply(digTopic: String) = redis.smembers[String](key(digTopic))
 
     // add/remove
     def add(topic: String, interests: String*) = redis.sadd[String](key(topic), interests: _*)
+
     def remove(topic: String, interests: String*) = redis.srem[String](key(topic), interests: _*)
 
     private def key(user: String, network: String): String = {
@@ -24,6 +24,11 @@ object Redis extends Topics {
     private def key(topic: String): String = {
       s"interests_${topic}"
     }
+  }
+
+  object MessagesStore {
+    // retrieve
+    def apply(trackingTermsTopic: String) = redis.smembers[String](trackingTermsTopic)
   }
 
 }
