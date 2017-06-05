@@ -22,10 +22,19 @@ trait Queries extends EventSourcing with ProfileActors {
     path("interests" / Segment) {
       userAtNetwork =>
         get {
-          val rtt: RetrieveTrackingTerms = RetrieveTrackingTerms(userAtNetwork)
-          val trackingTerms: Seq[String] = Await.result(InterestsStore(digTopic(rtt.user, rtt.network)), timeout.duration)
-          complete(StatusCodes.OK, trackingTerms.mkString(", "))
+          complete(StatusCodes.OK, trackingTerms(timeout, userAtNetwork).mkString(", "))
+        }
+    } ~ path("board" / Segment) {
+      userAtNetwork =>
+        get {
+          complete(StatusCodes.OK, trackingTerms(timeout, userAtNetwork).mkString(", "))
         }
     }
+
+  }
+
+  def trackingTerms(timeout: Timeout, userAtNetwork: String): Seq[String] = {
+    val rtt: RetrieveTrackingTerms = RetrieveTrackingTerms(userAtNetwork)
+    Await.result(InterestsStore(digTopic(rtt.user, rtt.network)), timeout.duration)
   }
 }
