@@ -83,13 +83,13 @@ class TwitterNetworker(val topic: String) extends ReactiveWrappedActor with Rece
   }
 
   private def twitterProducerRecord(tweet: Tweet, topic: String) = {
-    val key = Json.ByteArray.encode(TrackTerms(tweet.trackTerms))
-    val value = Json.ByteArray.encode(tweet)
+    val key = Json.encode(TrackTerms(tweet.trackTerms))
+    val value = Json.encode(tweet)
     new ProducerRecord[Array[Byte], Array[Byte]](topic, key, value)
   }
 
   private def digging(record: ConsumerRecordType): Digging = {
-    Json.ByteArray.decode[Digging](record.value())
+    Json.decode[Digging](record.value())
   }
 
 }

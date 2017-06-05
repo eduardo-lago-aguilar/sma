@@ -27,8 +27,8 @@ class Digger extends Actor with ActorLogging with Committing {
   }
 
   private def diggingProducerRecord(dig: Digging, topic: String) = {
-    val key = Json.ByteArray.encode(dig.key)
-    val value = Json.ByteArray.encode(dig)
+    val key = Json.encode(dig.key)
+    val value = Json.encode(dig)
     new ProducerRecord[Array[Byte], Array[Byte]](topic, key, value)
   }
 

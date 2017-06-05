@@ -26,7 +26,7 @@ class TwitterFeeder(topic: String) extends ReactiveWrappedActor with Receiving {
   }
 
   private def tweet(record: ConsumerRecordType): Tweet = {
-    Json.ByteArray.decode[Tweet](record.value())
+    Json.decode[Tweet](record.value())
   }
 
 }
