@@ -14,10 +14,10 @@ case class Digging(follower: String, interest: String, action: String) {
 
 case class DiggingReply()
 
-case class DiggingBulk(messages: Seq[Digging]) {
+case class BulkDigging(messages: Seq[Digging]) {
   def apply() = messages
 
   def serialize = messages.mkString(", ")
 }
 
-case class DiggingBulkReply()
+case class BulkDiggingReply()

@@ -1,33 +1,27 @@
 package sma.reactive
 
 import akka.Done
-import akka.actor.{Actor, PoisonPill, ActorLogging}
-import sma.eventsourcing.EventSourcing
+import sma.eventsourcing.{EventSourcing, Particle}
 
 import scala.concurrent.Future
-import scala.util.{Success, Failure}
 import scala.concurrent.duration._
+import scala.util.{Failure, Success}
 
-trait ReactiveWrappedActor extends Actor with ActorLogging with EventSourcing {
+trait ReactiveWrappedActor extends Particle with EventSourcing {
   implicit val timeout = akka.util.Timeout(5 seconds)
   val batchPeriod = 2 seconds
   val batchSize = 1000
 
-  println(s"--> [${self.path.name}] creating actor ")
+  starting
 
   override def preStart: Unit = makeItReactive
-  override def postStop(): Unit = println(s"--> [${self.path.name}] actor stopped")
-  override def unhandled(message: Any): Unit = {
-    println(s"--> [${self.path.name}] receiving an unknown message")
-    self ! PoisonPill
-  }
 
   def makeItReactive: Unit = {
     log.info(s"--> [${self.path.name}] creating reactive stream")
     consume.onComplete {
       case Failure(ex) =>
         log.error(ex, s"--> [${self.path.name}] stream failed, stopping the actor")
-        self ! PoisonPill
+        suicide
       case Success(_) =>
         log.info(s"--> [${self.path.name}] gracefully shutdown")
     }

@@ -10,25 +10,22 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import sma.storing.Redis
 import Redis.InterestsStore
 import sma.json.Json
-import sma.digging.{DiggingBulkReply, DiggingBulk, Digging}
+import sma.digging.{BulkDiggingReply, BulkDigging, Digging}
 import sma.eventsourcing.{Receiving, Committing}
 import sma.reactive.ReactiveWrappedActor
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-case class Heartbeat()
-
-case class HeartbeatReply()
-
 class TwitterNetworker(val topic: String) extends ReactiveWrappedActor with Receiving with Committing {
 
   val heartbeatPeriod = 2 seconds
 
   override def receive = {
-    case bulk: DiggingBulk =>
+    case bulk: BulkDigging =>
+      receiving(bulk.serialize)
       bulkProccess(bulk)
-      sender() ! DiggingBulkReply()
+      sender() ! BulkDiggingReply()
     case _: Heartbeat =>
       streamFromTwitter()
       sender() ! HeartbeatReply()
@@ -51,12 +48,11 @@ class TwitterNetworker(val topic: String) extends ReactiveWrappedActor with Rece
     Consumer.plainSource(consumerSettings, Subscriptions.topics(topic))
       .map(record => digging(record))
       .groupedWithin(batchSize, batchPeriod)
-      .mapAsync(1)(bulk => self ? DiggingBulk(bulk))
+      .mapAsync(1)(bulk => self ? BulkDigging(bulk))
       .runWith(Sink.ignore)
   }
 
-  private def bulkProccess(bulk: DiggingBulk): Future[Done] = {
-    log.info(s"--> [${self.path.name}] receiving ${bulk.serialize}")
+  private def bulkProccess(bulk: BulkDigging): Future[Done] = {
     Source(bulk().toVector)
       .runWith(Sink.foreach[Digging](proccess))
   }
@@ -69,7 +65,7 @@ class TwitterNetworker(val topic: String) extends ReactiveWrappedActor with Rece
   }
 
   private def streamFromTwitter(): Unit = {
-    log.info(s"--> [${self.path.name}] streaming from twitter ${topic}")
+    log.info(s"--> [${self.path.name}] streaming from twitter to |${replyTopic(topic)}|")
     Source.fromFuture(InterestsStore(topic)).runWith(Sink.foreach(trackTerms => {
 
       // TODO: bring them from twitter instead !
@@ -83,7 +79,7 @@ class TwitterNetworker(val topic: String) extends ReactiveWrappedActor with Rece
   }
 
   private def twitterProducerRecord(tweet: Tweet, topic: String) = {
-    val key = Json.encode(TrackTerms(tweet.trackTerms))
+    val key = Json.encode(TrackingTerms(tweet.trackingTerms))
     val value = Json.encode(tweet)
     new ProducerRecord[Array[Byte], Array[Byte]](topic, key, value)
   }

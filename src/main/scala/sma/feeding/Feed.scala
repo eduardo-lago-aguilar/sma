@@ -1,6 +1,7 @@
 package sma.feeding
 
 import akka.actor.{Actor, ActorLogging, Props}
+import sma.eventsourcing.Particle
 import sma.storing.Redis._
 
 object Feed {
@@ -9,10 +10,10 @@ object Feed {
   }
 }
 
-class Feed extends Actor with ActorLogging {
+class Feed extends Particle {
   override def receive = {
     case t: Interests =>
-      log.info(s"received ${t.mkString}")
+      receiving(t.mkString)
       sender() ! t.reply(InterestsStore(t.user, t.network))
   }
 
