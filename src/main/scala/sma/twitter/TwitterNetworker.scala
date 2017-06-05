@@ -6,6 +6,7 @@ import akka.stream.scaladsl.{Sink, Source}
 import org.apache.kafka.clients.producer.ProducerRecord
 import sma.digging.{BulkDigging, DiggingReactive}
 import sma.eventsourcing.Committing
+import sma.feeding.TrackingTerms
 import sma.json.Json
 
 import scala.concurrent.duration._

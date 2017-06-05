@@ -9,7 +9,7 @@ import sma.reactive.ReactiveStreamWrapper
 import sma.storing.Redis._
 import sma.twitter.TwitterNetworker
 
-trait Networkers extends EventSourcing {
+trait NetworkersBoot extends EventSourcing {
   def wakeupNetworkers: Unit = {
     fromFuture(smaUsers)
       .runWith(foreach(users => Source(users.toVector)

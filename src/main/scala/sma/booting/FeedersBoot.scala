@@ -9,7 +9,7 @@ import sma.reactive.ReactiveStreamWrapper
 import sma.storing.Redis._
 import sma.twitter.TwitterFeeder
 
-trait Feeders extends EventSourcing {
+trait FeedersBoot extends EventSourcing {
   def wakeupFeeders: Unit = {
     fromFuture(smaUsers)
       .runWith(foreach(users => Source(users.toVector)

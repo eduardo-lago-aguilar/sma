@@ -8,6 +8,8 @@ import sma.eventsourcing.Receiving
 import sma.json.Json
 import sma.reactive.ReactiveWrappedActor
 import akka.pattern.ask
+import sma.storing.Redis
+import sma.storing.Redis.InterestsStore
 
 import scala.collection.immutable.SortedSet
 import scala.concurrent.Future
@@ -24,19 +26,29 @@ abstract class DiggingReactive(topic: String) extends ReactiveWrappedActor with 
       .runWith(Sink.ignore)
   }
 
-  def proccess(bulk: BulkDigging) = {
+  def proccess(bulk: BulkDigging, storing: Boolean = false) = {
     receiving(bulk.serialize)
     Source(bulk().toVector)
-      .runWith(Sink.foreach[Digging](digProccess))
+      .runWith(Sink.foreach[Digging](dig => digProccess(dig, storing)))
     sender() ! BulkDiggingReply()
   }
 
   private def digging(record: ConsumerRecordType): Digging = Json.decode[Digging](record.value())
 
-  private def digProccess(dig: Digging): Unit = {
+  private def digProccess(dig: Digging, storing: Boolean = false): Unit = {
     dig.action match {
-      case "follow" => trackingTerms += dig.followee
-      case "forget" => trackingTerms -= dig.followee
+      case "follow" => {
+        trackingTerms += dig.followee
+        if (storing) {
+          InterestsStore.add(topic, dig.followee)
+        }
+      }
+      case "forget" => {
+        trackingTerms -= dig.followee
+        if(storing) {
+          InterestsStore.remove(topic, dig.followee)
+        }
+      }
     }
   }
 }
