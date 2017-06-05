@@ -13,5 +13,5 @@ trait Committing extends EventSourcing {
   val producerSettings = ProducerSettings(system, keySerializer, valueSerializer)
     .withBootstrapServers(bootstrapServers)
 
-  val producer = producerSettings.createKafkaProducer()
+  def producer = producerSettings.createKafkaProducer()
 }

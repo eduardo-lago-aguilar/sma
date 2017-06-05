@@ -8,7 +8,7 @@ import akka.http.scaladsl.server.directives.RouteDirectives.complete
 import akka.util.Timeout
 import sma.eventsourcing.{EventSourcing, ProfileActors}
 import sma.feeding.RetrieveTrackingTerms
-import sma.storing.Redis
+import sma.storing.Redis.InterestsStore
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -23,7 +23,7 @@ trait Queries extends EventSourcing with ProfileActors {
       userAtNetwork =>
         get {
           val rtt: RetrieveTrackingTerms = RetrieveTrackingTerms(userAtNetwork)
-          val trackingTerms: Seq[String] = Await.result(Redis.InterestsStore(digTopic(rtt.user, rtt.network)), timeout.duration)
+          val trackingTerms: Seq[String] = Await.result(InterestsStore(digTopic(rtt.user, rtt.network)), timeout.duration)
           complete(StatusCodes.OK, trackingTerms.mkString(", "))
         }
     }

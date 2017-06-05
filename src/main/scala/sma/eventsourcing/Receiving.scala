@@ -20,7 +20,7 @@ trait Receiving extends EventSourcing {
     .withGroupId(consumerGroup)
     .withProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, AUTO_OFFSET_RESET_CONFIG)
 
-  val consumer = consumerSettings.createKafkaConsumer()
+  def consumer = consumerSettings.createKafkaConsumer()
 
   def plainSource(topic: String): Source[ConsumerRecordType, Control] = {
     Consumer.plainSource(consumerSettings, Subscriptions.topics(topic))

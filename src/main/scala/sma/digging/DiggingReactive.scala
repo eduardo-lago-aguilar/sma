@@ -19,7 +19,7 @@ abstract class DiggingReactive(topic: String) extends ReactiveWrappedActor with 
   var trackingTerms = SortedSet[String]()
 
   override def consume: Future[Done] = {
-    Consumer.plainSource(consumerSettings, Subscriptions.topics(topic))
+    plainSource(topic)
       .map(record => digging(record))
       .groupedWithin(batchSize, batchPeriod)
       .mapAsync(1)(bulk => self ? BulkDigging(bulk))
