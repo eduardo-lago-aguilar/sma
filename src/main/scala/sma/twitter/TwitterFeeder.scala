@@ -15,7 +15,8 @@ class TwitterFeeder(topic: String) extends ReactiveWrappedActor with Receiving {
   override def receive = {
     case tweet: Tweet =>
       val ttt: String = trackingTermsTopic(topic, tweet.trackingTerms)
-      log.info(s"--> [${self.path.name}] receiving tweet ${tweet.body} -> storing message at redis ${ttt}")
+      log.info(s"--> [${self.path.name}] receiving tweet -> storing message at redis ${ttt}")
+      log.debug(tweet.body)
       MessagesStore.add(ttt, tweet.body)
       sender() ! TweetReply()
   }
