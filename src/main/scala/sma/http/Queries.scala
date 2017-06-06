@@ -2,11 +2,12 @@ package sma.http
 
 import akka.NotUsed
 import akka.http.scaladsl.common.EntityStreamingSupport
+import akka.http.scaladsl.model.ws.{TextMessage, Message}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.directives.PathDirectives.path
 import akka.http.scaladsl.server.directives.RouteDirectives.complete
-import akka.stream.scaladsl.Source
+import akka.stream.scaladsl.{Flow, Source}
 import akka.util.Timeout
 import sma.eventsourcing.EventSourcing
 import sma.storing.Redis.{MessagesStore, TrackingTermsStore}
@@ -22,6 +23,12 @@ trait Queries extends EventSourcing {
 
   implicit val jsonStreamingSupport = EntityStreamingSupport.json()
 
+  val echoFlow: Flow[Message, Message, _] = Flow[Message].map {
+    case TextMessage.Strict(text) => TextMessage(s"I got your message: $text!")
+    case _ => TextMessage(s"Sorry I didn't quite get that")
+  }
+
+
   val queryRoutes: Route = {
     path(Segment / "terms") {
       userAtNetwork =>
@@ -33,6 +40,10 @@ trait Queries extends EventSourcing {
         get {
           complete(board(userAtNetwork, hashTrackingTerms).map(s => Tweet(s, Seq(), timestamp)))
         }
+    } ~ path("ws-echo") {
+      get {
+        handleWebSocketMessages(echoFlow)
+      }
     }
 
   }
