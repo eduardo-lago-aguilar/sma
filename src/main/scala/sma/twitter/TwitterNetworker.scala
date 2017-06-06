@@ -5,9 +5,7 @@ import akka.pattern.ask
 import akka.stream.scaladsl.{Sink, Source}
 import org.apache.kafka.clients.producer.ProducerRecord
 import sma.digging.{BulkDigging, DiggingReactive}
-import sma.eventsourcing.Hash.sha256
-import sma.eventsourcing.{Hash, Committing}
-import sma.feeding.TrackingTerms
+import sma.eventsourcing.{TrackingTerms, Committing}
 import sma.json.Json
 
 import scala.concurrent.duration._
@@ -18,7 +16,9 @@ class TwitterNetworker(val topic: String) extends DiggingReactive(topic) with Co
 
   override def receive = {
     case heartbeat: Heartbeat =>
-      streamFromTwitter()
+      if (trackingTerms.size > 0) {
+        streamFromTwitter
+      }
       sender() ! HeartbeatReply()
     case bulk: BulkDigging =>
       super.proccess(bulk)
@@ -28,6 +28,8 @@ class TwitterNetworker(val topic: String) extends DiggingReactive(topic) with Co
     heartbeat
     super.preStart
   }
+
+  override def consumerGroup = s"${self.path.name}__twitter_networker"
 
   private def heartbeat: Unit = {
     Source.tick(0 milliseconds, heartbeatPeriod, ())
@@ -43,7 +45,10 @@ class TwitterNetworker(val topic: String) extends DiggingReactive(topic) with Co
     // TODO: bring them from twitter instead !
     Source(trackingTerms.toVector)
       .map(term => Tweet(term.toUpperCase, trackingTerms.toSeq, timestamp))
-      .runWith(Sink.foreach(tweet => producer.send(twitterProducerRecord(tweet, ttt))))
+      .runWith(Sink.foreach(tweet => {
+        producer.send(twitterProducerRecord(tweet, ttt))
+        producer.send(twitterProducerRecord(tweet, replyTopic(topic)))
+      }))
   }
 
   private def twitterProducerRecord(tweet: Tweet, targetTopic: String) = {
