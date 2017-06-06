@@ -14,7 +14,7 @@ import sma.twitter.{TrackingTerm, Tweet}
 
 import scala.concurrent.duration._
 
-trait Queries extends EventSourcing  {
+trait Queries extends EventSourcing {
 
   import sma.json.CustomJsonProtocol._
 
@@ -23,15 +23,15 @@ trait Queries extends EventSourcing  {
   implicit val jsonStreamingSupport = EntityStreamingSupport.json()
 
   val queryRoutes: Route = {
-    path("interests" / Segment) {
+    path(Segment / "terms") {
       userAtNetwork =>
         get {
           complete(trackingTerms(userAtNetwork).map(TrackingTerm))
         }
-    } ~ path("board" / Segment / Segment ) {
-      (userAtNetwork,hashTrackingTopics) =>
+    } ~ path(Segment / "board" / Segment) {
+      (userAtNetwork, hashTrackingTerms) =>
         get {
-          complete(board(userAtNetwork, hashTrackingTopics).map(s => Tweet(s, Seq(), timestamp)))
+          complete(board(userAtNetwork, hashTrackingTerms).map(s => Tweet(s, Seq(), timestamp)))
         }
     }
 
