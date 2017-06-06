@@ -10,4 +10,6 @@ trait EventSourcing extends Topics {
 
   def timestamp: Long = System.currentTimeMillis()
 
+  implicit var closingApp = false
+
 }
