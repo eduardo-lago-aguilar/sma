@@ -1,7 +1,6 @@
 package sma.booting
 
 import akka.actor.Props
-import akka.stream.scaladsl.Sink._
 import akka.stream.scaladsl.Source
 import akka.stream.scaladsl.Source._
 import sma.eventsourcing.EventSourcing
@@ -12,9 +11,13 @@ import sma.twitter.TwitterFeeder
 trait FeedersBoot extends EventSourcing {
   def wakeupFeeders: Unit = {
     fromFuture(smaUsers)
-      .runWith(foreach(users => Source(users.toVector)
-        .runWith(foreach(user => Source(networks.toVector)
-          .runWith(foreach(net => ReactiveStreamWrapper(system, replyTopic(digTopic(user, net)), Props(new TwitterFeeder(replyTopic(digTopic(user, net)))))))))))
+      .runForeach(users => Source(users.toVector)
+        .runForeach(user => Source(networks.toVector)
+          .runForeach(net => {
+            val topic = replyTopic(digTopic(user, net))
+            val name = s"${topic}_${TwitterFeeder.nick}"
+            ReactiveStreamWrapper(system, name, Props(new TwitterFeeder(topic)))
+          })))
   }
 
 }
