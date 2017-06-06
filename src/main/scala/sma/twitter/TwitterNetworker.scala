@@ -58,13 +58,13 @@ class TwitterNetworker(val topic: String) extends DiggingReactive(topic) with Co
   }
 
   private def storeTweet(json: String) = {
-    val tweet = Tweet(json, trackingTerms.toSeq, timestamp)
+    val id: String = Json.Tweet.decodeId(json)
+
+    val tweet = Tweet(id, json, trackingTerms.toSeq, timestamp)
+    log.info(s"storing tweet with ID = ${id}")
 
     producer.send(twitterProducerRecord(tweet, ttt))
-    log.debug(s"sent tweet to ${ttt}")
-
     producer.send(twitterProducerRecord(tweet, replyTopic(topic)))
-    log.debug(s"sent tweet tp ${replyTopic(topic)}")
   }
 
   private def ttt = trackingTermsTopic(replyTopic(topic), trackingTerms.toSeq)

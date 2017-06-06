@@ -38,4 +38,17 @@ object Json {
   def encode(value: Any): Array[Byte] = mapper.writeValueAsBytes(value)
 
   def decode[T: Manifest](value: Array[Byte]): T = mapper.readValue(value, typeReference[T])
+
+  def decode[T: Manifest](value: String): T = mapper.readValue(value, typeReference[T])
+
+  val prettyPrinterWriter = {
+    val mapper = new ObjectMapper()
+    mapper.registerModule(DefaultScalaModule)
+    mapper.writerWithDefaultPrettyPrinter
+  }
+
+  object Tweet {
+    def decodeId(json: String): String = Json.decode[Map[String, Any]](json).get("id_str").get.toString
+  }
+
 }
