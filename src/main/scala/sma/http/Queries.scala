@@ -8,13 +8,13 @@ import akka.http.scaladsl.server.directives.PathDirectives.path
 import akka.http.scaladsl.server.directives.RouteDirectives.complete
 import akka.stream.scaladsl.Source
 import akka.util.Timeout
-import sma.eventsourcing.{EventSourcing, ProfileActors}
+import sma.eventsourcing.EventSourcing
 import sma.storing.Redis.{MessagesStore, TrackingTermsStore}
 import sma.twitter.{TrackingTerm, Tweet}
 
 import scala.concurrent.duration._
 
-trait Queries extends EventSourcing with ProfileActors {
+trait Queries extends EventSourcing  {
 
   import sma.json.CustomJsonProtocol._
 
