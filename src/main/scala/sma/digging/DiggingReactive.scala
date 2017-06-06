@@ -1,14 +1,10 @@
 package sma.digging
 
 import akka.Done
-import akka.kafka.Subscriptions
-import akka.kafka.scaladsl.Consumer
 import akka.stream.scaladsl.{Sink, Source}
 import sma.eventsourcing.Receiving
 import sma.json.Json
 import sma.reactive.ReactiveWrappedActor
-import akka.pattern.ask
-import sma.storing.Redis
 import sma.storing.Redis.TrackingTermsStore
 
 import scala.collection.immutable.SortedSet
@@ -19,7 +15,7 @@ abstract class DiggingReactive(topic: String) extends ReactiveWrappedActor with 
   var trackingTerms = SortedSet[String]()
 
   override def consume: Future[Done] = {
-    plainSource(topic)
+    plainSource(topic, consumerGroup)
       .map(record => digging(record))
       .groupedWithin(batchSize, batchPeriod)
       .mapAsync(1)(bulk => self ? BulkDigging(bulk))
@@ -33,6 +29,8 @@ abstract class DiggingReactive(topic: String) extends ReactiveWrappedActor with 
     sender() ! BulkDiggingReply()
   }
 
+  def consumerGroup: String
+
   private def digging(record: ConsumerRecordType): Digging = Json.decode[Digging](record.value())
 
   private def digProccess(dig: Digging, storing: Boolean = false): Unit = {
@@ -45,7 +43,7 @@ abstract class DiggingReactive(topic: String) extends ReactiveWrappedActor with 
       }
       case "forget" => {
         trackingTerms -= dig.term
-        if(storing) {
+        if (storing) {
           TrackingTermsStore.remove(topic, dig.term)
         }
       }
