@@ -24,7 +24,7 @@ abstract class DiggingReactive(topic: String) extends ReactiveWrappedActor with 
   }
 
   def proccess(bulk: BulkDigging, storing: Boolean = false) = {
-    receiving(bulk.serialize)
+    receiving(bulk.mkString)
     Source(bulk().toVector)
       .runWith(Sink.foreach[Digging](dig => digProccess(dig, storing)))
     sender() ! BulkDiggingReply()

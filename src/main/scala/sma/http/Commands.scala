@@ -24,17 +24,18 @@ trait Commands extends EventSourcing {
 
     implicit val timeout = Timeout(5 seconds)
 
-    path("boards" / Segment / Segment) {
-      (interest, user) =>
+    path(Segment / Segment) {
+      (userAtNetwork, term) =>
+        val Array(user, network) = splittingUserAt(userAtNetwork)
         put {
-          onSuccess(digger ? Digging(user, interest, "follow")) {
+          onSuccess(digger ? Digging(user, network, term, "follow")) {
             case response: DiggingReply =>
               complete(StatusCodes.OK, s"follow ack received!")
             case _ =>
               complete(StatusCodes.InternalServerError)
           }
         } ~ delete {
-          onSuccess(digger ? Digging(user, interest, "forget")) {
+          onSuccess(digger ? Digging(term, network, term, "forget")) {
             case response: DiggingReply =>
               complete(StatusCodes.OK, s"forget ack received!")
             case _ =>

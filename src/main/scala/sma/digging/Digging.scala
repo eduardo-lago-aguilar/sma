@@ -1,12 +1,8 @@
 package sma.digging
 
-case class Digging(follower: String, interest: String, action: String) {
+case class Digging(user: String, network: String, term: String, action: String) {
 
-  def term = interest.split("@")(0)
-
-  def network = interest.split("@")(1)
-
-  def key: String = s"${follower}!${interest}"
+  val key: String = s"${term}!${user}@${network}"
 
   def mkString = key
 
@@ -17,7 +13,7 @@ case class DiggingReply()
 case class BulkDigging(messages: Seq[Digging]) {
   def apply() = messages
 
-  def serialize = messages.mkString(", ")
+  def mkString = messages.mkString(", ")
 }
 
 case class BulkDiggingReply()
