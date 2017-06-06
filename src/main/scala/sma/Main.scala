@@ -1,12 +1,11 @@
 package sma
 
-import akka.actor.{ActorRef, Props}
+import akka.actor.ActorRef
 import akka.http.scaladsl.server.HttpApp
 import akka.http.scaladsl.server.RouteConcatenation._
-import sma.booting.{ProfilesBoot, NetworkersBoot, FeedersBoot}
-import sma.feeding.{Profiling, Profiling$}
-import sma.http._
+import sma.booting.{FeedersBoot, NetworkersBoot, ProfilesBoot}
 import sma.digging.Digger
+import sma.http._
 
 object Main extends HttpApp with App with Commands with Queries with NetworkersBoot with FeedersBoot with ProfilesBoot {
 
@@ -20,7 +19,7 @@ object Main extends HttpApp with App with Commands with Queries with NetworkersB
 
   wakeupProfiles
 
-  startServer("localhost", 8080)   // This will start the server until the return key is pressed
+  startServer("localhost", 8080)
 
   def routes = commandRoutes ~ queryRoutes
 }
