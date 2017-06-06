@@ -38,7 +38,7 @@ class TweetSource(oAuth1: OAuth1, trackingTerms: Seq[String]) extends EventSourc
     while ((!hosebirdClient.isDone) && !closingApp && count < size) {
       take() match {
         case Some(json) =>
-          f
+          f(json)
           count = count + 1
         case None =>
       }
