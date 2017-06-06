@@ -27,7 +27,6 @@ abstract class DiggingReactive(topic: String) extends ReactiveWrappedActor with 
     receiving(bulk.mkString)
     Source(bulk().toVector)
       .runWith(Sink.foreach[Digging](dig => digProccess(dig, storing)))
-    sender() ! BulkDiggingReply()
   }
 
   def consumerGroup: String

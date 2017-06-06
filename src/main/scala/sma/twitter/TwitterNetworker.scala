@@ -4,7 +4,7 @@ import akka.actor._
 import akka.pattern.ask
 import akka.stream.scaladsl.{Sink, Source}
 import org.apache.kafka.clients.producer.ProducerRecord
-import sma.digging.{BulkDigging, DiggingReactive}
+import sma.digging.{BulkDiggingReply, BulkDigging, DiggingReactive}
 import sma.eventsourcing.{TrackingTerms, Committing}
 import sma.json.Json
 
@@ -16,16 +16,16 @@ object TwitterNetworker {
 
 class TwitterNetworker(val topic: String) extends DiggingReactive(topic) with Committing {
 
-  val heartbeatPeriod = 2 seconds
+  val heartbeatPeriod = 15 seconds
 
   override def receive = {
     case heartbeat: Heartbeat =>
-      if (trackingTerms.size > 0) {
-        streamFromTwitter
-      }
+      streamFromTwitter
       sender() ! HeartbeatReply()
     case bulk: BulkDigging =>
       super.proccess(bulk)
+      streamFromTwitter
+      sender() ! BulkDiggingReply()
   }
 
   override def preStart: Unit = {
@@ -42,17 +42,19 @@ class TwitterNetworker(val topic: String) extends DiggingReactive(topic) with Co
   }
 
   private def streamFromTwitter(): Unit = {
-    val ttt = trackingTermsTopic(replyTopic(topic), trackingTerms.toSeq)
-    log.info(s"--> [${self.path.name}] streaming from twitter to |${ttt}| w/ terms: (${trackingTerms.mkString(", ")})")
+    if (trackingTerms.size > 0) {
+      val ttt = trackingTermsTopic(replyTopic(topic), trackingTerms.toSeq)
+      log.info(s"--> [${self.path.name}] streaming from twitter to |${ttt}| w/ terms: (${trackingTerms.mkString(", ")})")
 
 
-    // TODO: bring them from twitter instead !
-    Source(trackingTerms.toVector)
-      .map(term => Tweet(term.toUpperCase, trackingTerms.toSeq, timestamp))
-      .runWith(Sink.foreach(tweet => {
-        producer.send(twitterProducerRecord(tweet, ttt))
-        producer.send(twitterProducerRecord(tweet, replyTopic(topic)))
-      }))
+      // TODO: bring them from twitter instead !
+      Source(trackingTerms.toVector)
+        .map(term => Tweet(term.toUpperCase, trackingTerms.toSeq, timestamp))
+        .runWith(Sink.foreach(tweet => {
+          producer.send(twitterProducerRecord(tweet, ttt))
+          producer.send(twitterProducerRecord(tweet, replyTopic(topic)))
+        }))
+    }
   }
 
   private def twitterProducerRecord(tweet: Tweet, targetTopic: String) = {
