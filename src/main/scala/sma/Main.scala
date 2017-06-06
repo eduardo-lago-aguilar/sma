@@ -11,8 +11,6 @@ object Main extends HttpApp with App with Commands with Queries with NetworkersB
 
   implicit val digger: ActorRef = system.actorOf(Digger.props(), "digger")
 
-  implicit var profiles = Map[String, ActorRef]().empty
-
   wakeupNetworkers
 
   wakeupFeeders
