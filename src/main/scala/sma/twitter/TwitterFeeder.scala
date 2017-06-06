@@ -10,6 +10,10 @@ import sma.storing.Redis.MessagesStore
 
 import scala.concurrent.Future
 
+object TwitterFeeder {
+  val nick = "twitter_feeder"
+}
+
 class TwitterFeeder(topic: String) extends ReactiveWrappedActor with Receiving {
 
   override def receive = {
