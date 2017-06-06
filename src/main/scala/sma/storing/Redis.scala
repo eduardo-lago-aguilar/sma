@@ -29,6 +29,9 @@ object Redis extends Topics {
   object MessagesStore {
     // retrieve
     def apply(trackingTermsTopic: String) = redis.smembers[String](trackingTermsTopic)
+
+    // add
+    def add(trackingTermsTopic: String, messages: String*) = redis.sadd[String](trackingTermsTopic, messages: _*)
   }
 
 }
