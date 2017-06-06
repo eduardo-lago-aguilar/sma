@@ -14,9 +14,11 @@ trait ReactiveWrappedActor extends Particle with EventSourcing {
 
   starting
 
-  override def preStart: Unit = makeItReactive
+  override def preStart: Unit = reactive
 
-  def makeItReactive: Unit = {
+  def consume: Future[Done]
+
+  private def reactive: Unit = {
     log.info(s"--> [${self.path.name}] creating reactive stream")
     consume.onComplete {
       case Failure(ex) =>
@@ -26,6 +28,4 @@ trait ReactiveWrappedActor extends Particle with EventSourcing {
         log.info(s"--> [${self.path.name}] gracefully shutdown")
     }
   }
-
-  def consume: Future[Done]
 }
