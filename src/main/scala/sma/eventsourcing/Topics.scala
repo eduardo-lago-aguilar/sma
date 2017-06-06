@@ -27,6 +27,7 @@ trait Topics {
 
   def splittingTermAt(termAtNetwork: String) = splittingUserAt(userAtNetwork = termAtNetwork)
 
-  def trackingTermsTopic(baseTopic: String, trackingTerms: Seq[String]): String = s"${baseTopic}_${sha256(trackingTerms.toVector)}"
+  def trackingTermsTopic(baseTopic: String, trackingTerms: Seq[String]): String = trackingTermsTopic(baseTopic, sha256(trackingTerms.toVector))
+  def trackingTermsTopic(baseTopic: String, hashTrackingTerms: String): String = s"${baseTopic}_${hashTrackingTerms}"
 
 }
