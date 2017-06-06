@@ -35,7 +35,7 @@ trait Commands extends EventSourcing {
               complete(StatusCodes.InternalServerError)
           }
         } ~ delete {
-          onSuccess(digger ? Digging(term, network, term, "forget")) {
+          onSuccess(digger ? Digging(user, network, term, "forget")) {
             case response: DiggingReply =>
               complete(StatusCodes.OK, s"forget ack received!")
             case _ =>
