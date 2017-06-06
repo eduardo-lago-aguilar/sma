@@ -4,8 +4,9 @@ import akka.actor._
 import akka.pattern.ask
 import akka.stream.scaladsl.{Sink, Source}
 import org.apache.kafka.clients.producer.ProducerRecord
-import sma.digging.{BulkDiggingReply, BulkDigging, DiggingReactive}
-import sma.eventsourcing.{TrackingTerms, Committing}
+import sma.Settings
+import sma.digging.{BulkDigging, BulkDiggingReply, DiggingReactive}
+import sma.eventsourcing.{Committing, TrackingTerms}
 import sma.json.Json
 
 import scala.concurrent.duration._
@@ -17,15 +18,16 @@ object TwitterNetworker {
 class TwitterNetworker(val topic: String) extends DiggingReactive(topic) with Committing {
 
   val heartbeatPeriod = 15 seconds
+  val maxNumberOfTweets = 10
 
   override def receive = {
     case heartbeat: Heartbeat =>
-      streamFromTwitter
       sender() ! HeartbeatReply()
+      streamFromTwitter
     case bulk: BulkDigging =>
       super.proccess(bulk)
-      streamFromTwitter
       sender() ! BulkDiggingReply()
+      streamFromTwitter
   }
 
   override def preStart: Unit = {
@@ -43,19 +45,25 @@ class TwitterNetworker(val topic: String) extends DiggingReactive(topic) with Co
 
   private def streamFromTwitter(): Unit = {
     if (trackingTerms.size > 0) {
-      val ttt = trackingTermsTopic(replyTopic(topic), trackingTerms.toSeq)
       log.info(s"--> [${self.path.name}] streaming from twitter to |${ttt}| w/ terms: (${trackingTerms.mkString(", ")})")
 
+      val tweetSource = new TweetSource(Settings.oAuth1, trackingTerms.toVector)
 
-      // TODO: bring them from twitter instead !
-      Source(trackingTerms.toVector)
-        .map(term => Tweet(term.toUpperCase, trackingTerms.toSeq, timestamp))
-        .runWith(Sink.foreach(tweet => {
-          producer.send(twitterProducerRecord(tweet, ttt))
-          producer.send(twitterProducerRecord(tweet, replyTopic(topic)))
-        }))
+      val count: Int = tweetSource.iterate(maxNumberOfTweets, storeTweet)
+
+      log.info(s"--> [${self.path.name}] finishing streaming from twitter to |${ttt}| w/ terms: (${trackingTerms.mkString(", ")}), brought ${count} messages!")
+
+      tweetSource.close
     }
   }
+
+  private def storeTweet(json: String) = {
+    val tweet = Tweet(json, trackingTerms.toSeq, timestamp)
+    producer.send(twitterProducerRecord(tweet, ttt))
+    producer.send(twitterProducerRecord(tweet, replyTopic(topic)))
+  }
+
+  private def ttt = trackingTermsTopic(replyTopic(topic), trackingTerms.toSeq)
 
   private def twitterProducerRecord(tweet: Tweet, targetTopic: String) = {
     val key = Json.encode(TrackingTerms(tweet.trackingTerms))
