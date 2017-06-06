@@ -10,6 +10,10 @@ import sma.json.Json
 
 import scala.concurrent.duration._
 
+object TwitterNetworker {
+  val nick = "twitter_networker"
+}
+
 class TwitterNetworker(val topic: String) extends DiggingReactive(topic) with Committing {
 
   val heartbeatPeriod = 2 seconds
@@ -29,7 +33,7 @@ class TwitterNetworker(val topic: String) extends DiggingReactive(topic) with Co
     super.preStart
   }
 
-  override def consumerGroup = s"${self.path.name}__twitter_networker"
+  override def consumerGroup = s"${self.path.name}_${TwitterNetworker.nick}"
 
   private def heartbeat: Unit = {
     Source.tick(0 milliseconds, heartbeatPeriod, ())
