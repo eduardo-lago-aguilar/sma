@@ -12,18 +12,16 @@ trait Receiving extends EventSourcing {
 
   private val keyDeserializer: ByteArrayDeserializer = new ByteArrayDeserializer
   private val valueDeserializer: ByteArrayDeserializer = new ByteArrayDeserializer
-  private val consumerGroup: String = "group0"
   private val AUTO_OFFSET_RESET_CONFIG: String = "earliest"
 
-  val consumerSettings = ConsumerSettings(system, keyDeserializer, valueDeserializer)
-    .withBootstrapServers(bootstrapServers)
-    .withGroupId(consumerGroup)
-    .withProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, AUTO_OFFSET_RESET_CONFIG)
+  private def consumerSettings(group: String) =
+    ConsumerSettings(system, keyDeserializer, valueDeserializer)
+      .withBootstrapServers(bootstrapServers)
+      .withGroupId(group)
+      .withProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, AUTO_OFFSET_RESET_CONFIG)
 
-  def consumer = consumerSettings.createKafkaConsumer()
-
-  def plainSource(topic: String): Source[ConsumerRecordType, Control] = {
-    Consumer.plainSource(consumerSettings, Subscriptions.topics(topic))
+  def plainSource(topic: String, group: String): Source[ConsumerRecordType, Control] = {
+    Consumer.plainSource(consumerSettings(group), Subscriptions.topics(topic))
   }
 
 }
