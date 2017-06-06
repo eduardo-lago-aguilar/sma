@@ -6,6 +6,7 @@ import sma.eventsourcing.Receiving
 import sma.json.Json
 import sma.reactive.ReactiveWrappedActor
 import sma.storing.Redis.TrackingTermsStore
+import akka.pattern.ask
 
 import scala.collection.immutable.SortedSet
 import scala.concurrent.Future
