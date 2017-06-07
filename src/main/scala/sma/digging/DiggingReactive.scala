@@ -1,12 +1,12 @@
 package sma.digging
 
 import akka.Done
+import akka.pattern.ask
 import akka.stream.scaladsl.{Sink, Source}
 import sma.eventsourcing.Receiving
 import sma.json.Json
 import sma.reactive.ReactiveWrappedActor
-import sma.storing.Redis.TrackingTermsStore
-import akka.pattern.ask
+import sma.storing.Redis
 
 import scala.collection.immutable.SortedSet
 import scala.concurrent.Future
@@ -38,13 +38,13 @@ abstract class DiggingReactive(topic: String) extends ReactiveWrappedActor with 
       case "follow" => {
         trackingTerms += dig.term
         if (storing) {
-          TrackingTermsStore.add(topic, dig.term)
+          Redis.sadd(topic, dig.term)
         }
       }
       case "forget" => {
         trackingTerms -= dig.term
         if (storing) {
-          TrackingTermsStore.remove(topic, dig.term)
+          Redis.sremove(topic, dig.term)
         }
       }
     }
