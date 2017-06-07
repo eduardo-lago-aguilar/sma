@@ -6,7 +6,7 @@ import akka.stream.scaladsl.Sink
 import sma.eventsourcing.Receiving
 import sma.json.Json
 import sma.reactive.ReactiveWrappedActor
-import sma.storing.Redis.MessagesStore
+import sma.storing.Redis.redis
 
 import scala.concurrent.Future
 
@@ -18,14 +18,23 @@ class TwitterFeeder(topic: String) extends ReactiveWrappedActor with Receiving {
 
   override def receive = {
     case tweet: Tweet =>
-      val ttt: String = trackingTermsTopic(topic, tweet.trackingTerms)
-      log.info(s"--> [${self.path.name}] receiving tweet -> storing message at redis ${ttt}")
-      log.debug(tweet.body)
-      MessagesStore.add(ttt, tweet.body)
+      receiving(s"receiving tweet with id ${tweet.id} -> storing message at redis ${trackingTermsTopic(topic, tweet.trackingTerms)}")
+      storeTweet(tweet)
       sender() ! TweetReply()
   }
 
   override def consume: Future[Done] = consumeLinearAsync
+
+  private def storeTweet(tweet: Tweet) = {
+    val ttt = trackingTermsTopic(topic, tweet.trackingTerms)
+    val tttTweet = s"${ttt}_${tweet.id}"
+    redis.exists(tttTweet).foreach(exists => {
+      if (!exists) {
+        redis.set(tttTweet, 1)
+        redis.lpush(ttt, tweet.body)
+      }
+    })
+  }
 
   private def consumeLinearAsync: Future[Done] = {
     val consumerGroup = s"${self.path.name}__twitter_feeder"
