@@ -2,12 +2,15 @@ package sma
 
 import java.io.File
 
+import akka.stream.scaladsl.Source
 import com.twitter.hbc.httpclient.auth.OAuth1
 import com.typesafe.config.ConfigFactory
 
 import scala.util.Properties
 
 object Settings {
+
+  val theUsers = Source(Vector("ed", "herve", "olivia", "nicolas"))
 
   val twitter = ConfigFactory.parseFile(new File("application.conf")).getConfig("twitter")
 

@@ -10,8 +10,6 @@ import scala.concurrent.Future
 object Redis extends Topics {
   val redis = RedisClient()
 
-  def smaUsers = redis.smembers[String]("sma-users")
-
   def smembers(key: String) = redis.smembers[String](key)
 
   def smembersStream(key: String) = Source.fromFuture(smembers(key)).mapConcat(seq => seq.toStream)
