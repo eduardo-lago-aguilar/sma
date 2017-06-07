@@ -12,9 +12,11 @@ trait Static {
 
   val staticRoutes: Route = {
     pathSingleSlash {
-      redirect("ed@twitter", MovedPermanently)
-    } ~ path("ed@twitter") {
-      getFromFile("index.html")
+      redirect(s"${sma.Settings.theUsers(0)}@${sma.Settings.networks(0)}", MovedPermanently)
+    } ~ path(Segment) {
+      _ => {
+        getFromFile("index.html")
+      }
     }
   }
 
