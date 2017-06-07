@@ -2,7 +2,6 @@ package sma
 
 import java.io.File
 
-import akka.stream.scaladsl.Source
 import com.twitter.hbc.httpclient.auth.OAuth1
 import com.typesafe.config.{Config, ConfigFactory}
 
@@ -14,11 +13,30 @@ object Settings {
 
   def theUsers = config.getStringList("users").asScala.toVector
 
+  val firstUser: String = {
+    if(theUsers.size > 0) {
+      sma.Settings.theUsers(0)
+    } else {
+      "ed"
+    }
+  }
   def networks = config.getStringList("networks").asScala.toVector
 
+  val firstNet: String = {
+    if(networks.size > 0) {
+      sma.Settings.networks(0)
+    } else {
+      "twitter"
+    }
+  }
+
   def wakeupNetworkers = config.getBoolean("wakeup_networkers")
+
   def wakeupFeeders = config.getBoolean("wakeup_feeders")
+
   def wakeupProfilers = config.getBoolean("wakeup_profilers")
+
+  val twitter = ConfigFactory.parseFile(new File("application.conf")).getConfig("twitter")
 
   def consumerKey = Properties.envOrElse("TWITTER_CONSUMER_KEY", twitter.getString("consumer_key"))
 
