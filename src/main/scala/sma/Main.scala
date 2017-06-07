@@ -13,7 +13,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.sys.ShutdownHookThread
 
-object Main extends App with Commands with Queries with NetworkersBoot with FeedersBoot with ProfilesBoot {
+object Main extends App with Commands with Queries with Static with NetworkersBoot with FeedersBoot with ProfilesBoot {
 
   implicit val digger: ActorRef = system.actorOf(Digger.props(), "digger")
 
@@ -31,7 +31,7 @@ object Main extends App with Commands with Queries with NetworkersBoot with Feed
 
   boot
 
-  def routes = commandRoutes ~ queryRoutes
+  def routes = commandRoutes ~ queryRoutes ~ staticRoutes
 
   def boot: ShutdownHookThread = {
     val httpService = Http()
