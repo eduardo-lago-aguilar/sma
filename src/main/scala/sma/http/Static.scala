@@ -15,6 +15,8 @@ trait Static {
       redirect(s"${sma.Settings.theUsers(0)}@${sma.Settings.networks(0)}", MovedPermanently)
     } ~ path("sma.js") {
       getFromFile("static/sma.js")
+    } ~ path("home.html") {
+      getFromFile("static/home.html")
     } ~ pathPrefix("lib") {
       getFromDirectory("static/lib/")
     } ~ path(Segment) {
