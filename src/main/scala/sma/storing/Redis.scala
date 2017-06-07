@@ -1,37 +1,26 @@
 package sma.storing
 
+import akka.NotUsed
+import akka.stream.scaladsl.Source
 import redis.RedisClient
 import sma.eventsourcing.Topics
 
+import scala.concurrent.Future
+
 object Redis extends Topics {
-  private val redis = RedisClient()
+  val redis = RedisClient()
 
   def smaUsers = redis.smembers[String]("sma-users")
 
-  object TrackingTermsStore {
-    // retrieve
-    def apply(digTopic: String) = redis.smembers[String](key(digTopic))
+  def smembers(key: String) = redis.smembers[String](key)
 
-    // add/remove
-    def add(topic: String, interests: String*) = redis.sadd[String](key(topic), interests: _*)
+  def smembersStream(key: String) = Source.fromFuture(smembers(key)).mapConcat(seq => seq.toStream)
 
-    def remove(topic: String, interests: String*) = redis.srem[String](key(topic), interests: _*)
+  def sadd(key: String, interests: String*) = redis.sadd[String](key, interests: _*)
 
-    private def key(user: String, network: String): String = {
-      key(digTopic(user, network))
-    }
+  def sremove(key: String, interests: String*) = redis.srem[String](key, interests: _*)
 
-    private def key(topic: String): String = {
-      s"interests_${topic}"
-    }
-  }
+  def lrange(key: String): Future[Seq[String]] = redis.lrange[String](key, 0, -1)
 
-  object MessagesStore {
-    // retrieve
-    def apply(trackingTermsTopic: String) = redis.smembers[String](trackingTermsTopic)
-
-    // add
-    def add(trackingTermsTopic: String, messages: String*) = redis.sadd[String](trackingTermsTopic, messages: _*)
-  }
-
+  def lrangeStream(key: String): Source[String, NotUsed] = Source.fromFuture(lrange(key)).mapConcat(seq => seq.toStream)
 }
