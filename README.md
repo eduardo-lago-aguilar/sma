@@ -29,11 +29,21 @@ An running demo of applied [Event-Sourcing](https://martinfowler.com/eaaDev/Even
   - `DELETE /ed@twitter/war`
 
 2. Command routes (see [CQRS](https://martinfowler.com/bliki/CQRS.html)) receive the request and forward it form of `Digging` message to `Digger` actor (`follow` or `forget`)
+
 ![alt text](https://raw.githubusercontent.com/eduardo-lago-aguilar/sma/master/doc/sma_arch.png "Social Media Aggregator Architecture")
 
 
 3. `Digger` actor streams `follow`/`forget` messages to user corresponding [Kafka Topic](https://kafka.apache.org/documentation/), for instance: `ed@twitter`, messages in topic are `JSON` serialized on top of binary array
 
-4. A `Profiling` [Reactive Kafka](https://github.com/akka/reactive-kafka) actor consumes `follow`/`forget` messages from user topic (`ed@twitter`) and stores/removes those terms in/from Redis persistent storage
+4. A `Profiling` [Reactive Kafka](https://github.com/akka/reactive-kafka) actor consumes `follow`/`forget` messages from user topic (`ed@twitter`)
+
+5. `Profiling` actor stores/removes those terms in/from Redis persistent storage
+
+6. UI might request tracking terms whenever, issuing for instance `GET /ed@twitter/terms` to queries routes (see [CQRS](https://martinfowler.com/bliki/CQRS.html))
+
+7. Queries routes receives the reques and fetches the tracking terms from Redis
+
+8. Queries routes send tracking terms back to UI
+
 
 
