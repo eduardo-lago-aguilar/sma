@@ -1,0 +1,12 @@
+{
+  "name": "sma",
+  "description": "Social Media Aggregator (SMA) ",
+  "version": "1.0.0",
+  "homepage": "https://github.com/angular/angular-seed",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "angular": "^1.6.4",
+    "angular-ui-router": "^1.0.3"
+  }
+}

@@ -13,6 +13,8 @@ trait Static {
   val staticRoutes: Route = {
     pathSingleSlash {
       redirect(s"${sma.Settings.theUsers(0)}@${sma.Settings.networks(0)}", MovedPermanently)
+    } ~ pathPrefix("lib") {
+      getFromDirectory("static/lib/")
     } ~ path(Segment) {
       _ => {
         getFromFile("static/index.html")

@@ -1,0 +1,6 @@
+{
+    "directory": "./static/lib",
+    "resolvers": [
+        "bower-npm-resolver"
+    ]
+}
