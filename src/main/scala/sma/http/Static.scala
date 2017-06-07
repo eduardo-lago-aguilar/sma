@@ -15,7 +15,7 @@ trait Static {
       redirect(s"${sma.Settings.theUsers(0)}@${sma.Settings.networks(0)}", MovedPermanently)
     } ~ path(Segment) {
       _ => {
-        getFromFile("index.html")
+        getFromFile("static/index.html")
       }
     }
   }
