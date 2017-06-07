@@ -10,9 +10,9 @@ import scala.util.Properties
 
 object Settings {
 
-  val theUsers = Source(Vector("ed", "herve", "olivia", "nicolas"))
+  val theUsers = Vector("ed", "herve", "olivia", "nicolas")
 
-  val networks = Source(Vector("twitter"))
+  val networks = Vector("twitter")
 
   val twitter = ConfigFactory.parseFile(new File("application.conf")).getConfig("twitter")
 

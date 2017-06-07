@@ -11,8 +11,8 @@ import sma.twitter.TwitterNetworker
 
 trait NetworkersBoot extends EventSourcing {
   def wakeupNetworkers: Unit = {
-    theUsers
-      .runForeach(user => networks
+    Source(theUsers)
+      .runForeach(user => Source(networks)
         .runForeach(net => {
           val topic = digTopic(user, net)
           val name = s"${topic}_${TwitterNetworker.nick}"

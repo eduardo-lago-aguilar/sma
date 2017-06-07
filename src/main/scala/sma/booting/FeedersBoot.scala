@@ -12,8 +12,8 @@ import sma.twitter.TwitterFeeder
 
 trait FeedersBoot extends EventSourcing {
   def wakeupFeeders: Unit = {
-    theUsers
-      .runForeach(user => networks
+    Source(theUsers)
+      .runForeach(user => Source(networks)
         .runForeach(net => {
           val topic = replyTopic(digTopic(user, net))
           val name = s"${topic}_${TwitterFeeder.nick}"
