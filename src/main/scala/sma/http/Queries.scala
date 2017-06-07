@@ -2,7 +2,7 @@ package sma.http
 
 import akka.NotUsed
 import akka.http.scaladsl.common.EntityStreamingSupport
-import akka.http.scaladsl.model.ws.{TextMessage, Message}
+import akka.http.scaladsl.model.ws.{Message, TextMessage}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.directives.PathDirectives.path
@@ -11,7 +11,7 @@ import akka.stream.scaladsl.{Flow, Source}
 import akka.util.Timeout
 import sma.eventsourcing.EventSourcing
 import sma.json.Json
-import sma.storing.Redis.{MessagesStore, TrackingTermsStore}
+import sma.storing.Redis.{lrangeStream, smembersStream}
 import sma.twitter.{TrackingTerm, Tweet}
 
 import scala.concurrent.duration._
@@ -28,7 +28,6 @@ trait Queries extends EventSourcing {
     case TextMessage.Strict(text) => TextMessage(s"I got your message: $text!")
     case _ => TextMessage(s"Sorry I didn't quite get that")
   }
-
 
   val queryRoutes: Route = {
     path(Segment / "terms") {
@@ -49,12 +48,8 @@ trait Queries extends EventSourcing {
 
   }
 
-  def trackingTerms(userAtNetwork: String): Source[String, NotUsed] = {
-    Source.fromFuture(TrackingTermsStore(digTopic(userAtNetwork))).mapConcat(seq => seq.toStream)
-  }
+  def trackingTerms(userAtNetwork: String): Source[String, NotUsed] = smembersStream(digTopic(userAtNetwork))
 
-  def board(userAtNetwork: String, hashTrackingTopics: String) = {
-    val ttt = trackingTermsTopic(replyTopic(digTopic(userAtNetwork)), hashTrackingTopics)
-    Source.fromFuture(MessagesStore(ttt)).mapConcat(seq => seq.toStream)
-  }
+  def board(userAtNetwork: String, hashTrackingTopics: String) = lrangeStream(trackingTermsTopic(replyTopic(digTopic(userAtNetwork)), hashTrackingTopics))
+
 }
