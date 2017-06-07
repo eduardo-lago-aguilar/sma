@@ -12,6 +12,8 @@ object Settings {
 
   val theUsers = Source(Vector("ed", "herve", "olivia", "nicolas"))
 
+  val networks = Source(Vector("twitter"))
+
   val twitter = ConfigFactory.parseFile(new File("application.conf")).getConfig("twitter")
 
   def consumerKey = Properties.envOrElse("TWITTER_CONSUMER_KEY", twitter.getString("consumer_key"))

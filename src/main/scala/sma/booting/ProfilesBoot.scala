@@ -12,7 +12,7 @@ import sma.storing.Redis._
 trait ProfilesBoot extends EventSourcing {
   def wakeupProfiles: Unit = {
     theUsers
-      .runForeach(user => Source(networks.toVector)
+      .runForeach(user => networks
         .runForeach(net => {
           val topic: String = digTopic(user, net)
           val name = s"${topic}_${Profiling.nick}"
