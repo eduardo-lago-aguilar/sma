@@ -45,13 +45,13 @@ class TwitterNetworker(val topic: String) extends DiggingReactive(topic) with Co
 
   private def streamFromTwitter(): Unit = {
     if (trackingTerms.size > 0) {
-      log.info(s"--> [${self.path.name}] streaming from twitter to |${ttt}| w/ terms: (${trackingTerms.mkString(", ")})")
+      log.info(s"--> [${self.path.name}] streaming from twitter to |${topic}| w/ terms: (${trackingTerms.mkString(", ")})")
 
       val tweetSource = new TweetSource(Settings.oAuth1, trackingTerms.toVector)
 
       val count: Int = tweetSource.iterate(maxNumberOfTweets, storeTweet)
 
-      log.info(s"--> [${self.path.name}] finishing streaming from twitter to |${ttt}| w/ terms: (${trackingTerms.mkString(", ")}), brought ${count} messages!")
+      log.info(s"--> [${self.path.name}] finishing streaming from twitter to |${topic}| w/ terms: (${trackingTerms.mkString(", ")}), brought ${count} messages!")
 
       tweetSource.close
     }
