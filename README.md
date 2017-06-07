@@ -1,6 +1,6 @@
 # Social Media Aggregator
 
-An running demo of applied Event-Sourcing and CQRS architectural patterns. Social Media Aggregator (SMA) collects several social APIs entries into a composed stream visualized via user’s boards. Requirements are described in “Challenge” document.
+An running demo of applied Event-Sourcing and CQRS architectural patterns. Social Media Aggregator (SMA) collects several social APIs entries into a composed stream visualized via user’s boards. Requirements are described in [Challenge](https://raw.githubusercontent.com/eduardo-lago-aguilar/sma/master/doc/redbee-ChallengeSocialmediaaggregator.pdf) document.
 
 
 ## Architecure Guidelines
