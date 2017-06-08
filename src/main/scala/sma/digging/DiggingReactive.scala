@@ -14,12 +14,16 @@ import scala.concurrent.Future
 abstract class DiggingReactive(topic: String) extends ReactiveWrappedActor with Receiving {
 
   var trackingTerms = SortedSet[String]()
+  var lastVersion = 0
 
   override def consume: Future[Done] = {
     plainSource(topic, consumerGroup)
       .map(record => digging(record))
       .groupedWithin(batchSize, batchPeriod)
-      .mapAsync(1)(bulk => self ? BulkDigging(bulk))
+      .mapAsync(1)(bulk => {
+        lastVersion += 1
+        self ? BulkDigging(bulk, lastVersion)
+      })
       .runWith(Sink.ignore)
   }
 

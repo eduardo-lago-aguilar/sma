@@ -33,15 +33,20 @@ class TweetSource(oAuth1: OAuth1, trackingTerms: Seq[String]) extends EventSourc
       Some(msgQueue.take())
   }
 
-  def iterate(size: Int, f: (String) => Any): Int = {
+  def iterate(size: Int, f: (String) => Any, cancelling: () => Boolean): Int = {
     var count = 0
-    while ((!hosebirdClient.isDone) && !closingApp && count < size) {
+    var cancel = cancelling()
+    while ((!hosebirdClient.isDone) && !closingApp && count < size && !cancel) {
       take() match {
         case Some(json) =>
           f(json)
           count = count + 1
         case None =>
       }
+      cancel = cancelling()
+    }
+    if (cancel) {
+      println("cancelling twitter streaming!")
     }
     count
   }

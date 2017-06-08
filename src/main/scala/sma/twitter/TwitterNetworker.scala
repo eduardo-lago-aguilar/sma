@@ -23,11 +23,11 @@ class TwitterNetworker(val topic: String) extends DiggingReactive(topic) with Co
   override def receive = {
     case heartbeat: Heartbeat =>
       sender() ! HeartbeatReply()
-      streamFromTwitter
+      streamFromTwitter(heartbeat.version)
     case bulk: BulkDigging =>
       sender() ! BulkDiggingReply()
       super.proccess(bulk)
-      streamFromTwitter
+      streamFromTwitter(bulk.version)
   }
 
   override def preStart: Unit = {
@@ -40,16 +40,16 @@ class TwitterNetworker(val topic: String) extends DiggingReactive(topic) with Co
   private def heartbeat: Unit = {
     Source.tick(0 milliseconds, heartbeatPeriod, ())
       .async
-      .runForeach(_ => self ? Heartbeat())
+      .runForeach(_ => self ? Heartbeat(lastVersion))
   }
 
-  private def streamFromTwitter(): Unit = {
-    if (trackingTerms.size > 0) {
+  private def streamFromTwitter(version: Int): Unit = {
+    val cancelling = () => version < lastVersion
+    if (trackingTerms.size > 0 && !cancelling()) {
       log.info(s"--> [${self.path.name}] streaming from twitter to |${topic}| w/ terms: (${trackingTerms.mkString(", ")})")
 
       val tweetSource = new TweetSource(Settings.oAuth1, trackingTerms.toVector)
-
-      val count: Int = tweetSource.iterate(maxNumberOfTweets, storeTweet)
+      val count: Int = tweetSource.iterate(maxNumberOfTweets, storeTweet, cancelling)
 
       log.info(s"--> [${self.path.name}] finishing streaming from twitter to |${topic}| w/ terms: (${trackingTerms.mkString(", ")}), brought ${count} messages!")
 

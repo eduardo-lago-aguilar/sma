@@ -10,7 +10,7 @@ case class Digging(user: String, network: String, term: String, action: String) 
 
 case class DiggingReply()
 
-case class BulkDigging(messages: Seq[Digging]) {
+case class BulkDigging(messages: Seq[Digging], version: Int) {
   def apply() = messages
 
   def mkString = messages.mkString(", ")

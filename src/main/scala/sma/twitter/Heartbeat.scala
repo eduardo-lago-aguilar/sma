@@ -1,6 +1,6 @@
 package sma.twitter
 
-case class Heartbeat()
+case class Heartbeat(version: Int)
 
 case class HeartbeatReply()
 
