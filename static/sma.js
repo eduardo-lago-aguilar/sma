@@ -1,6 +1,6 @@
 (function () {
 
-    function config($stateProvider, $locationProvider ) {
+    function config($stateProvider, $locationProvider) {
         $locationProvider.html5Mode({
             enabled: true,
             requireBase: false
@@ -22,11 +22,30 @@
         var $$ = this;
 
         $$.userAtNetwork = $stateParams.userAtNetwork;
-        $$.trackingTerms = [];
 
+        //
+        // tracking terms init
+        //
+        $$.trackingTerms = [];
+        updateHashTrackingTerms();
+
+        //
+        // tweets init
+        //
+        $$.tweets = [];
+
+        // bring tracking terms
         retriveTrackingTerms();
 
+
+        //
+        // tracking terms
+        //
         function retriveTrackingTerms() {
+            $http.get($stateParams.userAtNetwork + "/terms").then(onRetrieveTrackingTermsSuccess);
+        }
+
+        function onRetrieveTrackingTermsSuccess(response) {
 
             function unwrapTrackingTerms(trackingTermsObjects) {
                 return _.map(trackingTermsObjects, function (term) {
@@ -34,19 +53,30 @@
                 });
             }
 
-            $http.get($stateParams.userAtNetwork + "/terms").then(function(response){
-                updateTrackingTerms(unwrapTrackingTerms(response.data).sort());
-            });
+            updateTrackingTerms(unwrapTrackingTerms(response.data).sort());
         }
 
         function updateTrackingTerms(terms) {
             $$.trackingTerms.length = 0;
             Array.prototype.push.apply($$.trackingTerms, terms);
-            $$.hashTrackingTerms = hashTrackingTerms();
+            updateHashTrackingTerms();
+            retrieveTweets();
         }
 
-        function hashTrackingTerms() {
-            return CryptoJS.SHA256($$.trackingTerms.join(", "));
+        function updateHashTrackingTerms() {
+            $$.hashTrackingTerms = CryptoJS.SHA256($$.trackingTerms.join(", "));
+        }
+
+        //
+        // tweets
+        //
+        function retrieveTweets() {
+            $http.get($stateParams.userAtNetwork + "/board/" + $$.hashTrackingTerms).then(onRetrieveTweetsSuccess);
+        }
+
+        function onRetrieveTweetsSuccess(response) {
+            $$.tweets.length = 0;
+            Array.prototype.push.apply($$.tweets, response.data);
         }
     }
 
