@@ -5,30 +5,14 @@ import java.io.File
 import com.twitter.hbc.httpclient.auth.OAuth1
 import com.typesafe.config.{Config, ConfigFactory}
 
+import scala.collection.JavaConverters._
 import scala.util.Properties
-
-import collection.JavaConverters._
 
 object Settings {
 
   def theUsers = config.getStringList("users").asScala.toVector
 
-  val firstUser: String = {
-    if(theUsers.size > 0) {
-      sma.Settings.theUsers(0)
-    } else {
-      "ed"
-    }
-  }
   def networks = config.getStringList("networks").asScala.toVector
-
-  val firstNet: String = {
-    if(networks.size > 0) {
-      sma.Settings.networks(0)
-    } else {
-      "twitter"
-    }
-  }
 
   def wakeupNetworkers = config.getBoolean("wakeup_networkers")
 
@@ -36,7 +20,9 @@ object Settings {
 
   def wakeupProfilers = config.getBoolean("wakeup_profilers")
 
-  val twitter = ConfigFactory.parseFile(new File("application.conf")).getConfig("twitter")
+  def defaultUser = config.getString("default_user")
+
+  def defaultNetwork = config.getString("default_network")
 
   def consumerKey = Properties.envOrElse("TWITTER_CONSUMER_KEY", twitter.getString("consumer_key"))
 
