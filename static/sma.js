@@ -1,10 +1,13 @@
 (function () {
 
-    function config($stateProvider) {
-        var st = $stateProvider.state;
+    function config($stateProvider, $locationProvider ) {
+        $locationProvider.html5Mode({
+            enabled: true,
+            requireBase: false
+        });
 
-        st("home", {
-                url: "",
+        $stateProvider.state("home", {
+                url: "/:userAtNetwork",
                 templateUrl: "home.html",
                 controller: 'HomeController',
                 controllerAs: 'hc'
@@ -12,13 +15,13 @@
         );
     }
 
-    angular.module("sma", ["ui.router"]).config(["$stateProvider", config])
+    angular.module("sma", ["ui.router"]).config(["$stateProvider", "$locationProvider", config])
 
 
-    function HomeController() {
-        this.data = "Hellooooo!";
+    function HomeController($stateParams) {
+        this.userAtNetwork = $stateParams.userAtNetwork;
     }
 
-    angular.module("sma").controller("HomeController", [HomeController]);
+    angular.module("sma").controller("HomeController", ["$stateParams", HomeController]);
 
 })();
