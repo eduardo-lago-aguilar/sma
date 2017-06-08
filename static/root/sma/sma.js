@@ -8,7 +8,7 @@
 
         $stateProvider.state("home", {
                 url: "/:userAtNetwork",
-                templateUrl: "home.html",
+                templateUrl: "root/sma/home.html",
                 controller: 'HomeController',
                 controllerAs: 'hc'
             }
