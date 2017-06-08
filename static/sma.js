@@ -18,10 +18,20 @@
     angular.module("sma", ["ui.router"]).config(["$stateProvider", "$locationProvider", config])
 
 
-    function HomeController($stateParams) {
+    function HomeController($stateParams, $http) {
         this.userAtNetwork = $stateParams.userAtNetwork;
+
+        retriveTrackingTerms();
+
+        function retriveTrackingTerms() {
+            $http.get($stateParams.userAtNetwork + "/terms").then(function(response){
+                this.trackingTerms = _.map(response.data, function(term){
+                    return term.term;
+                });
+            });
+        }
     }
 
-    angular.module("sma").controller("HomeController", ["$stateParams", HomeController]);
+    angular.module("sma").controller("HomeController", ["$stateParams", "$http", HomeController]);
 
 })();
