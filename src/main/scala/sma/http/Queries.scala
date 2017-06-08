@@ -10,9 +10,8 @@ import akka.http.scaladsl.server.directives.RouteDirectives.complete
 import akka.stream.scaladsl.{Flow, Source}
 import akka.util.Timeout
 import sma.eventsourcing.EventSourcing
-import sma.json.Json
 import sma.storing.Redis.{lrangeStream, smembersStream}
-import sma.twitter.{TrackingTerm, Tweet}
+import sma.twitter.{TweetJsonHelper, TrackingTerm, Tweet}
 
 import scala.concurrent.duration._
 
@@ -38,7 +37,7 @@ trait Queries extends EventSourcing {
     } ~ path(Segment / "board" / Segment) {
       (userAtNetwork, hashTrackingTerms) =>
         get {
-          complete(board(userAtNetwork, hashTrackingTerms).map(body => Tweet(Json.Tweet.decodeId(body), body, Seq(), timestamp)))
+          complete(board(userAtNetwork, hashTrackingTerms).map(json => Tweet(TweetJsonHelper.decodeId(json).get.toString, json, Seq(), timestamp)))
         }
     } ~ path("ws-echo") {
       get {

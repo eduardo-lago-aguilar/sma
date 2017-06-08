@@ -47,8 +47,4 @@ object Json {
     mapper.writerWithDefaultPrettyPrinter
   }
 
-  object Tweet {
-    def decodeId(json: String): String = Json.decode[Map[String, Any]](json).get("id_str").get.toString
-  }
-
 }

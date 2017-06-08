@@ -18,7 +18,7 @@ object TwitterNetworker {
 class TwitterNetworker(val topic: String) extends DiggingReactive(topic) with Committing {
 
   val heartbeatPeriod = 15 seconds
-  val maxNumberOfTweets = 10
+  val maxNumberOfTweets = 200
   private var streaming = false
 
   override def receive = {
@@ -66,12 +66,14 @@ class TwitterNetworker(val topic: String) extends DiggingReactive(topic) with Co
   }
 
   private def storeTweet(json: String) = {
-    val id: String = Json.Tweet.decodeId(json)
-
-    val tweet = Tweet(id, json, trackingTerms.toSeq, timestamp)
-    log.info(s"storing tweet with ID = ${id}")
-
-    producer.send(twitterProducerRecord(tweet, replyTopic(topic)))
+    TweetJsonHelper.decodeId(json) match {
+      case Some(id) =>
+        val tweet = Tweet(id.toString, json, trackingTerms.toSeq, timestamp)
+        log.info(s"storing tweet with ID = ${id.toString}")
+        producer.send(twitterProducerRecord(tweet, replyTopic(topic)))
+      case None =>
+        log.error("unable to decode tweet JSON")
+    }
   }
 
   private def twitterProducerRecord(tweet: Tweet, targetTopic: String) = {
