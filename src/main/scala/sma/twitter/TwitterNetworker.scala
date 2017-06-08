@@ -19,6 +19,7 @@ class TwitterNetworker(val topic: String) extends DiggingReactive(topic) with Co
 
   val heartbeatPeriod = 15 seconds
   val maxNumberOfTweets = 10
+  private var streaming = false
 
   override def receive = {
     case heartbeat: Heartbeat =>
@@ -40,12 +41,18 @@ class TwitterNetworker(val topic: String) extends DiggingReactive(topic) with Co
   private def heartbeat: Unit = {
     Source.tick(0 milliseconds, heartbeatPeriod, ())
       .async
-      .runForeach(_ => self ? Heartbeat(lastVersion))
+      .runForeach(_ => {
+        if(!streaming) {
+          // only heartbeats when not streaming
+          self ? Heartbeat(lastVersion)
+        }
+      })
   }
 
   private def streamFromTwitter(version: Int): Unit = {
     val cancelling = () => version < lastVersion
     if (trackingTerms.size > 0 && !cancelling()) {
+      streaming = true
       log.info(s"--> [${self.path.name}] streaming from twitter to |${topic}| w/ terms: (${trackingTerms.mkString(", ")})")
 
       val tweetSource = new TweetSource(Settings.oAuth1, trackingTerms.toVector)
@@ -55,6 +62,7 @@ class TwitterNetworker(val topic: String) extends DiggingReactive(topic) with Co
 
       tweetSource.close
     }
+    streaming = false
   }
 
   private def storeTweet(json: String) = {
