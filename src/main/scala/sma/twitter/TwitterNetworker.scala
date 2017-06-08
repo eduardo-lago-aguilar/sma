@@ -40,7 +40,7 @@ class TwitterNetworker(val topic: String) extends DiggingReactive(topic) with Co
   private def heartbeat: Unit = {
     Source.tick(0 milliseconds, heartbeatPeriod, ())
       .async
-      .runWith(Sink.foreach(_ => self ? Heartbeat()))
+      .runForeach(_ => self ? Heartbeat())
   }
 
   private def streamFromTwitter(): Unit = {
