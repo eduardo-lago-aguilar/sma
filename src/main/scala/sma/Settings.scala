@@ -4,17 +4,17 @@ import java.io.File
 
 import akka.stream.scaladsl.Source
 import com.twitter.hbc.httpclient.auth.OAuth1
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{Config, ConfigFactory}
 
 import scala.util.Properties
 
+import collection.JavaConverters._
+
 object Settings {
 
-  val theUsers = Vector("ed", "herve", "olivia", "nicolas")
+  def theUsers = config.getStringList("users").asScala.toVector
 
-  val networks = Vector("twitter")
-
-  val twitter = ConfigFactory.parseFile(new File("application.conf")).getConfig("twitter")
+  def networks = config.getStringList("networks").asScala.toVector
 
   def consumerKey = Properties.envOrElse("TWITTER_CONSUMER_KEY", twitter.getString("consumer_key"))
 
@@ -25,4 +25,8 @@ object Settings {
   def tokenSecret = Properties.envOrElse("TWITTER_TOKEN_SECRET", twitter.getString("token_secret"))
 
   def oAuth1 = new OAuth1(consumerKey, consumerSecret, token, tokenSecret)
+
+  private val config: Config = ConfigFactory.parseFile(new File("application.conf"))
+
+  private val twitter = config.getConfig("twitter")
 }
