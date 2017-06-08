@@ -53,7 +53,11 @@
                 });
             }
 
-            updateTrackingTerms(unwrapTrackingTerms(response.data).sort());
+            var terms = unwrapTrackingTerms(response.data).sort();
+
+            if(!_($$.trackingTerms).isEqual(terms)) {
+                updateTrackingTerms(terms);
+            }
         }
 
         function updateTrackingTerms(terms) {
