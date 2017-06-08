@@ -22,16 +22,31 @@
         var $$ = this;
 
         $$.userAtNetwork = $stateParams.userAtNetwork;
+        $$.trackingTerms = [];
 
         retriveTrackingTerms();
 
         function retriveTrackingTerms() {
-            $http.get($stateParams.userAtNetwork + "/terms").then(function(response){
-                $$.trackingTerms = _.map(response.data, function(term){
+
+            function unwrapTrackingTerms(trackingTermsObjects) {
+                return _.map(trackingTermsObjects, function (term) {
                     return term.term;
-                }).sort();
-                $$.hashTrackingTerms = CryptoJS.SHA256($$.trackingTerms.join(", "))
+                });
+            }
+
+            $http.get($stateParams.userAtNetwork + "/terms").then(function(response){
+                updateTrackingTerms(unwrapTrackingTerms(response.data).sort());
             });
+        }
+
+        function updateTrackingTerms(terms) {
+            $$.trackingTerms.length = 0;
+            Array.prototype.push.apply($$.trackingTerms, terms);
+            $$.hashTrackingTerms = hashTrackingTerms();
+        }
+
+        function hashTrackingTerms() {
+            return CryptoJS.SHA256($$.trackingTerms.join(", "));
         }
     }
 
