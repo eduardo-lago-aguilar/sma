@@ -20,22 +20,23 @@ An running demo of applied [Event-Sourcing](https://martinfowler.com/eaaDev/Even
 * Complementary storage for fast fetching of Twitter feed (Redis)
 * JSON serialization for persistent topics (Jackson JSON)
 * JSON streaming to UI with Akka Streams (Akka Http Spray Json)
+* Idempotent `HTTP` verbs are used
 
 ## Fast Data Architecture Use Cases
 
-1. UI issues `PUT/DELETE /<user@network>/<term>` indicating that `<user>` wants to track/untrack a given term at `<network>`, idempotent `HTTP` verbs are used, minimal acknowledgment is returned. For instance:
+1. UI issues `PUT` or `DELETE` to `/<user@network>/<term>` indicating that `<user>` wants to track/untrack a given term at `<network>`, minimal acknowledgment is returned. For instance:
 
-  - `PUT /ed@twitter/rockmusic`
-  - `DELETE /ed@twitter/war`
+  - `PUT /ed@twitter/rockmusic` -> follow
+  - `DELETE /ed@twitter/war`    -> forget
 
-2. Command routes (see [CQRS](https://martinfowler.com/bliki/CQRS.html)) receive the request and forward it form of `Digging` message to `Digger` actor (`follow` or `forget`)
+2. Command routes (see [CQRS](https://martinfowler.com/bliki/CQRS.html)) receive the request and forward it form of `Digging` message to `Digger` actor. `Digging` message is one of the types `follow` or `forget`
 
 ![alt text](https://raw.githubusercontent.com/eduardo-lago-aguilar/sma/master/doc/sma_arch.png "Social Media Aggregator Architecture")
 
 
-3. `Digger` actor streams `follow`/`forget` messages to user corresponding [Kafka Topic](https://kafka.apache.org/documentation/), for instance: `ed@twitter`, messages in topic are `JSON` serialized on top of binary array
+3. `Digger` actor streams `follow` or `forget` message to user corresponding [Kafka Topic](https://kafka.apache.org/documentation/) at the specified network, topic name matches `ed@twitter`. Message in topic is `JSON` serialized on top of binary array
 
-4. A `Profiling` [Reactive Kafka](https://github.com/akka/reactive-kafka) actor consumes `follow`/`forget` messages from user topic (`ed@twitter`)
+4. A `Profiling` ([Reactive Kafka](https://github.com/akka/reactive-kafka)) actor consumes the `follow` or `forget` messages from user topic (`ed@twitter`)
 
 5. `Profiling` actor stores/removes those terms in/from Redis persistent storage
 
