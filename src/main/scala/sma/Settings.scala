@@ -16,6 +16,8 @@ object Settings {
 
   def networks = config.getStringList("networks").asScala.toVector
 
+  def wakeupNetworkers = config.getBoolean("wakeup_networkers")
+
   def consumerKey = Properties.envOrElse("TWITTER_CONSUMER_KEY", twitter.getString("consumer_key"))
 
   def consumerSecret = Properties.envOrElse("TWITTER_CONSUMER_SECRET", twitter.getString("consumer_secret"))

@@ -17,7 +17,9 @@ object Main extends App with Commands with Queries with NetworkersBoot with Feed
 
   implicit val digger: ActorRef = system.actorOf(Digger.props(), "digger")
 
-  wakeupNetworkers
+  if (Settings.wakeupNetworkers) {
+    wakeupNetworkers
+  }
 
   wakeupFeeders
 
