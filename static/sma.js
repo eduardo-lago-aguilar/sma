@@ -29,7 +29,7 @@
             $http.get($stateParams.userAtNetwork + "/terms").then(function(response){
                 $$.trackingTerms = _.map(response.data, function(term){
                     return term.term;
-                });
+                }).sort();
                 $$.hashTrackingTerms = CryptoJS.SHA256($$.trackingTerms.join(", "))
             });
         }
