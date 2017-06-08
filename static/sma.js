@@ -75,8 +75,14 @@
         }
 
         function onRetrieveTweetsSuccess(response) {
+
+            function parseTweets(tweets) {
+                return _.map(tweets, function (tweet) {
+                    return JSON.parse(tweet.body);
+                });
+            }
             $$.tweets.length = 0;
-            Array.prototype.push.apply($$.tweets, response.data);
+            Array.prototype.push.apply($$.tweets, parseTweets(response.data));
         }
     }
 
