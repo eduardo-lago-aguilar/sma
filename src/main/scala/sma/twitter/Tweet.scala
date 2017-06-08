@@ -2,7 +2,7 @@ package sma.twitter
 
 import sma.json.Json
 
-case class TrackingTerm(text: String)
+case class TrackingTerm(term: String)
 
 case class Tweet(id: String, body: String, trackingTerms: Seq[String], timestamp: Long, hashTrackingTerms: String)
 
