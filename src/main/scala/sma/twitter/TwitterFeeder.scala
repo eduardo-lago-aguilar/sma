@@ -19,19 +19,18 @@ class TwitterFeeder(topic: String) extends ReactiveWrappedActor with Receiving {
   override def receive = {
     case tweet: Tweet =>
       sender() ! TweetReply()
-      receiving(s"receiving tweet with id ${tweet.id} -> storing message at redis ${trackingTermsTopic(topic, tweet.trackingTerms)}")
+      receiving(s"receiving tweet with id ${tweet.id} -> storing message at redis ${tweet.hashTrackingTerms}")
       storeTweet(tweet)
   }
 
   override def consume: Future[Done] = consumeLinearAsync
 
   private def storeTweet(tweet: Tweet) = {
-    val ttt = trackingTermsTopic(topic, tweet.trackingTerms)
-    val tttTweet = s"${ttt}_${tweet.id}"
-    redis.exists(tttTweet).foreach(exists => {
+    val httId: String = s"${tweet.hashTrackingTerms}_${tweet.id}"
+    redis.exists(httId).foreach(exists => {
       if (!exists) {
-        redis.set(tttTweet, 1)
-        redis.lpush(ttt, tweet.body)
+        redis.set(httId, 1)
+        redis.lpush(tweet.hashTrackingTerms, tweet.body)
       }
     })
   }

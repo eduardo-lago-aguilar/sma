@@ -1,7 +1,6 @@
 package sma.eventsourcing
 
 import akka.actor.ActorSystem
-import sma.eventsourcing.Hash._
 
 trait Topics {
   implicit val system: ActorSystem = ActorSystem("sma")
@@ -24,8 +23,5 @@ trait Topics {
   }
 
   def splittingTermAt(termAtNetwork: String) = splittingUserAt(userAtNetwork = termAtNetwork)
-
-  def trackingTermsTopic(baseTopic: String, trackingTerms: Seq[String]): String = trackingTermsTopic(baseTopic, sha256(trackingTerms.toVector))
-  def trackingTermsTopic(baseTopic: String, hashTrackingTerms: String): String = s"${baseTopic}_${hashTrackingTerms}"
 
 }

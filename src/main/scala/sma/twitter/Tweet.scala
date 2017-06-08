@@ -4,7 +4,7 @@ import sma.json.Json
 
 case class TrackingTerm(text: String)
 
-case class Tweet(id: String, body: String, trackingTerms: Seq[String], timestamp: Long)
+case class Tweet(id: String, body: String, trackingTerms: Seq[String], timestamp: Long, hashTrackingTerms: String)
 
 case class TweetReply()
 
