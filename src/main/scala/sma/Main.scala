@@ -21,9 +21,13 @@ object Main extends App with Commands with Queries with NetworkersBoot with Feed
     wakeupNetworkers
   }
 
-  wakeupFeeders
+  if (Settings.wakeupFeeders) {
+    wakeupFeeders
+  }
 
-  wakeupProfiles
+  if (Settings.wakeupProfilers) {
+    wakeupProfiles
+  }
 
   boot
 
