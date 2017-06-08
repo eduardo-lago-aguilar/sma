@@ -19,15 +19,18 @@
 
 
     function HomeController($stateParams, $http) {
-        this.userAtNetwork = $stateParams.userAtNetwork;
+        var $$ = this;
+
+        $$.userAtNetwork = $stateParams.userAtNetwork;
 
         retriveTrackingTerms();
 
         function retriveTrackingTerms() {
             $http.get($stateParams.userAtNetwork + "/terms").then(function(response){
-                this.trackingTerms = _.map(response.data, function(term){
+                $$.trackingTerms = _.map(response.data, function(term){
                     return term.term;
                 });
+                $$.hashTrackingTerms = CryptoJS.SHA256($$.trackingTerms.join(", "))
             });
         }
     }
