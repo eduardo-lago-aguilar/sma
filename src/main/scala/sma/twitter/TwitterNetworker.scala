@@ -25,8 +25,8 @@ class TwitterNetworker(val topic: String) extends DiggingReactive(topic) with Co
       sender() ! HeartbeatReply()
       streamFromTwitter
     case bulk: BulkDigging =>
-      super.proccess(bulk)
       sender() ! BulkDiggingReply()
+      super.proccess(bulk)
       streamFromTwitter
   }
 

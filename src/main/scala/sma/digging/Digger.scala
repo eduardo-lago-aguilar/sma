@@ -15,11 +15,11 @@ class Digger extends Particle with Committing {
 
   override def receive = {
     case message: Digging =>
+      sender() ! DiggingReply()
+
       commit(message, digTopic(message.user, message.network))
 
       receiving(message.mkString)
-
-      sender() ! DiggingReply()
   }
 
   def commit(message: Digging, topic: String) = {

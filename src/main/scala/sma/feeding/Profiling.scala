@@ -12,8 +12,8 @@ object Profiling {
 class Profiling(topic: String) extends DiggingReactive(topic) {
   override def receive = {
     case bulk: BulkDigging =>
-      super.proccess(bulk)
       sender() ! BulkDiggingReply()
+      super.proccess(bulk)
   }
 
   override def consumerGroup = s"${self.path.name}_${Profiling.nick}"
