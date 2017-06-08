@@ -23,30 +23,29 @@ abstract class DiggingReactive(topic: String) extends ReactiveWrappedActor with 
       .runWith(Sink.ignore)
   }
 
-  def proccess(bulk: BulkDigging, storing: Boolean = false) = {
+  def proccess(bulk: BulkDigging) = {
     receiving(bulk.mkString)
     Source(bulk().toVector)
-      .runWith(Sink.foreach[Digging](dig => digProccess(dig, storing)))
+      .runWith(Sink.foreach[Digging](dig => digProccess(dig)))
   }
 
   def consumerGroup: String
 
+  def doFollow(term: String): Unit = {
+    trackingTerms += term
+  }
+
+  def doForget(term: String): Unit = {
+    trackingTerms -= term
+  }
+
   private def digging(record: ConsumerRecordType): Digging = Json.decode[Digging](record.value())
 
-  private def digProccess(dig: Digging, storing: Boolean = false): Unit = {
+  private def digProccess(dig: Digging): Unit = {
     dig.action match {
-      case "follow" => {
-        trackingTerms += dig.term
-        if (storing) {
-          Redis.sadd(topic, dig.term)
-        }
-      }
-      case "forget" => {
-        trackingTerms -= dig.term
-        if (storing) {
-          Redis.sremove(topic, dig.term)
-        }
-      }
+      case "follow" => doFollow(dig.term)
+      case "forget" => doForget(dig.term)
     }
   }
+
 }
