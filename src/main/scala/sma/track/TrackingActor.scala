@@ -2,8 +2,11 @@ package sma.track
 
 import akka.actor.{ActorRef, Props}
 import sma.eventsourcing.{EventSourcing, Particle}
+import sma.reactive.ReactiveStreamWrapper
 import sma.track.TrackingActor.{Connecting, HashTrackingTerms}
 import sma.twitter.Tweet
+
+import scala.util.Random
 
 object TrackingActor {
   def props(): Props = Props(classOf[TrackingActor])
@@ -17,15 +20,14 @@ object TrackingActor {
 class TrackingActor extends Particle with EventSourcing {
   override def receive: Receive = {
     case Connecting(wsActor) =>
-      logReceiving("is connecting ")
+      logReceiving("is connecting")
       context become connected(wsActor)
   }
 
   def connected(wsActor: ActorRef): Receive = {
-    case hashTrackingTerms: HashTrackingTerms =>
-      logReceiving(s"starts tracking with hash = ${hashTrackingTerms.hashTrackingTerms}")
-      val tracker: ActorRef = system.actorOf(Tracker.props())
-      tracker ! hashTrackingTerms
+    case HashTrackingTerms(htt) =>
+      logReceiving(s"starts tracking with hash = ${htt}")
+      ReactiveStreamWrapper(system, s"tracker_${htt}_${Random.nextInt()}", Props(new Tracker(htt, self)))
     case t: Tweet =>
       logReceiving("forwarding tweet to ws actor!")
       wsActor ! t
