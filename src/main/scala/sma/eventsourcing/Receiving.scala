@@ -6,6 +6,8 @@ import akka.kafka.{ConsumerSettings, Subscriptions}
 import akka.stream.scaladsl.Source
 import org.apache.kafka.clients.consumer.{ConsumerConfig, ConsumerRecord}
 import org.apache.kafka.common.serialization.ByteArrayDeserializer
+import sma.json.Json
+import sma.twitter.Tweet
 
 trait Receiving extends EventSourcing {
   type ConsumerRecordType = ConsumerRecord[Array[Byte], Array[Byte]]
@@ -23,5 +25,10 @@ trait Receiving extends EventSourcing {
   def plainSource(topic: String, group: String): Source[ConsumerRecordType, Control] = {
     Consumer.plainSource(consumerSettings(group), Subscriptions.topics(topic))
   }
+
+  def decodeTweet(record: ConsumerRecordType): Tweet = {
+    Json.decode[Tweet](record.value())
+  }
+
 
 }
