@@ -87,6 +87,7 @@
             var term = $$.term;
             $http.put($stateParams.userAtNetwork + "/" + term).then(function () {
                 insertTrackingTerms([term]);
+                $$.term = "";
                 retrieveTweets();
             });
         }
