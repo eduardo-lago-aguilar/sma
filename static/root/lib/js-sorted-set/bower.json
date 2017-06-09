@@ -1,0 +1,14 @@
+{
+  "name": "js-sorted-set",
+  "version": "0.1.0",
+  "main": "sorted-set.js",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "src",
+    "test",
+    "gulpfile.js",
+    "gulpfile.coffee",
+    "package.json"
+  ]
+}
