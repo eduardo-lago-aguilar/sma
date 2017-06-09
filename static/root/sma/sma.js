@@ -1,5 +1,17 @@
 (function () {
 
+    var unwrap = function(response){
+        return response.data;
+    };
+
+    function users($http) {
+        return $http.get("/users").then(unwrap);
+    }
+
+    function trackingTerms($http, $stateParams) {
+        return $http.get($stateParams.userAtNetwork + "/terms").then(unwrap);
+    }
+
     function config($stateProvider, $locationProvider) {
         $locationProvider.html5Mode({
             enabled: true,
@@ -10,7 +22,11 @@
                 url: "/:userAtNetwork",
                 templateUrl: "root/sma/home.html",
                 controller: 'HomeController',
-                controllerAs: 'hc'
+                controllerAs: 'hc',
+                resolve: {
+                    users: ["$http", users],
+                    trackingTerms: ["$http", '$stateParams', trackingTerms]
+                }
             }
         );
     }
@@ -18,78 +34,85 @@
     angular.module("sma", ["ui.router"]).config(["$stateProvider", "$locationProvider", config])
 
 
-    function HomeController($stateParams, $http) {
+    function HomeController($stateParams, $http, users, trackingTerms) {
         var $$ = this;
 
+        //
+        // user @ network init
+        //
         $$.userAtNetwork = $stateParams.userAtNetwork;
+        $$.user = $stateParams.userAtNetwork.split("@")[0]
+        $$.network = $stateParams.userAtNetwork.split("@")[1]
+        $$.users = _.map(users, function (user) {
+            return user.user;
+        });
 
         //
         // tracking terms init
         //
-        $$.trackingTerms = [];
-        updateHashTrackingTerms();
+        $$.trackingTermsSet = new SortedSet();
+        $$.trackingTerms = $$.trackingTermsSet.toArray();
+        insertTrackingTerms(_.map(trackingTerms, function(term){
+            return term.term;
+        }));
 
         //
         // tweets init
         //
         $$.tweets = [];
-
-        // bring tracking terms
-        retriveTrackingTerms();
-
+        retrieveTweets();
 
         //
         // tracking terms
         //
-        function retriveTrackingTerms() {
-            $http.get($stateParams.userAtNetwork + "/terms").then(onRetrieveTrackingTermsSuccess);
+        function insertTrackingTerms(trackingTerms) {
+            trackingTerms.forEach(function (term) {
+                $$.trackingTermsSet.insert(term);
+            });
+            updateTrackingTerms();
         }
 
-        function onRetrieveTrackingTermsSuccess(response) {
-
-            function unwrapTrackingTerms(trackingTermsObjects) {
-                return _.map(trackingTermsObjects, function (term) {
-                    return term.term;
-                });
-            }
-
-            var terms = unwrapTrackingTerms(response.data).sort();
-
-            if(!_($$.trackingTerms).isEqual(terms)) {
-                updateTrackingTerms(terms);
-            }
+        function removeTrackingTerm(term) {
+            $$.trackingTermsSet.remove(term);
+            updateTrackingTerms();
         }
 
-        function updateTrackingTerms(terms) {
+        function updateTrackingTerms() {
             $$.trackingTerms.length = 0;
-            Array.prototype.push.apply($$.trackingTerms, terms);
-            updateHashTrackingTerms();
-            retrieveTweets();
+            Array.prototype.push.apply($$.trackingTerms, $$.trackingTermsSet.toArray().sort());
+            $$.hashTrackingTerms = CryptoJS.SHA256($$.trackingTerms.join(", "));
         }
 
-        function updateHashTrackingTerms() {
-            $$.hashTrackingTerms = CryptoJS.SHA256($$.trackingTerms.join(", "));
+        $$.tapFollowTerm = function () {
+            var term = $$.term;
+            $http.put($stateParams.userAtNetwork + "/" + term).then(function () {
+                insertTrackingTerms([term]);
+                retrieveTweets();
+            });
+        }
+
+        $$.tapForgetTerm = function (term) {
+            $http.delete($stateParams.userAtNetwork + "/" + term).then(function () {
+                removeTrackingTerm(term);
+                retrieveTweets();
+            });
         }
 
         //
         // tweets
         //
         function retrieveTweets() {
-            $http.get($stateParams.userAtNetwork + "/board/" + $$.hashTrackingTerms).then(onRetrieveTweetsSuccess);
+            $http.get($stateParams.userAtNetwork + "/board/" + $$.hashTrackingTerms).then(unwrap).then(onRetrieveTweetsSuccess);
         }
 
         function onRetrieveTweetsSuccess(response) {
-
-            function parseTweets(tweets) {
-                return _.map(tweets, function (tweet) {
-                    return JSON.parse(tweet.body);
-                });
-            }
             $$.tweets.length = 0;
-            Array.prototype.push.apply($$.tweets, parseTweets(response.data));
+            Array.prototype.push.apply($$.tweets, _.map(response, function (tweet) {
+                return JSON.parse(tweet.body);
+            }));
         }
     }
 
-    angular.module("sma").controller("HomeController", ["$stateParams", "$http", HomeController]);
+    angular.module("sma").controller("HomeController", ["$stateParams", "$http", 'users', 'trackingTerms', HomeController]);
 
 })();

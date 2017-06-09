@@ -7,6 +7,10 @@
 
     <title>Social Media Aggregator (SMA)</title>
 
+    <link rel="stylesheet" href="/root/sma/css/default.css">
+    <link rel="stylesheet" href="/root/sma/css/layout.css">
+    <link rel="stylesheet" href="/root/sma/css/media-queries.css">
+
     <style type="text/css">
         /**
          * Hide when Angular is not yet loaded and initialized
@@ -15,6 +19,8 @@
             display: none !important;
         }
     </style>
+
+    <link rel="shortcut icon" href="favicon.png" >
 
     <!-- HTML5 shiv and Respond.js support IE8 or Older for HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -29,11 +35,16 @@
     <div ng-cloak ui-view></div>
 </div>
 
+<script src="/root/sma/js/modernizr.js"></script>
+
 <script src="/root/lib/angular/angular.js"></script>
 <script src="/root/lib/angular-ui-router/release/angular-ui-router.js"></script>
 <script src="/root/lib/underscore/underscore.js"></script>
 <script src="/root/lib/crypto-js/crypto-js.js"></script>
+<script src="/root/lib/js-sorted-set/sorted-set.min.js"></script>
 <script src="/root/sma/sma.js"></script>
+
+
 
 </body>
 </html>

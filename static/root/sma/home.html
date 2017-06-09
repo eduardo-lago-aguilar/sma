@@ -1,9 +1,96 @@
-<b>user@netwoork: {{hc.userAtNetwork}} !</b>
-<br/>
-<b>hash: {{hc.hashTrackingTerms}}</b>
-<br/>
-<b>trackingTerms: {{hc.trackingTerms}}</b>
-<br/>
-<b>tweets count: {{hc.tweets.length}}</b>
-<br/>
-<b>tweets: {{hc.tweets}}</b>
+<header id="top">
+
+    <div class="row">
+
+        <div class="header-content twelve columns">
+
+            <h1 id="logo-text"><a href="#" title="">Social Media Aggregator</a></h1>
+            <p id="intro">{{hc.userAtNetwork}}</p>
+
+        </div>
+
+    </div>
+
+    <nav id="nav-wrap">
+
+        <a class="mobile-btn" href="#nav-wrap" title="Show navigation">Show Menu</a>
+        <a class="mobile-btn" href="#" title="Hide navigation">Hide Menu</a>
+
+        <div class="row">
+
+            <ul id="nav" class="nav">
+                <li ng-class='{current:(user == hc.user)}' ng-repeat="user in hc.users"><a href="/{{user}}@{{hc.network}}">{{user}}</a></li>
+            </ul>
+
+        </div>
+
+    </nav>
+
+</header>
+
+<div id="content-wrap">
+
+    <div class="row">
+
+        <div id="main" class="eight columns">
+
+            <article class="entry" ng-repeat="tweet in hc.tweets">
+
+                <header class="entry-header">
+
+                    <!--<h2 class="entry-title">-->
+                        <!--<a href="single.html" title="">Hey, We Love Open Sans!</a>-->
+                    <!--</h2>-->
+
+                    <div class="entry-meta">
+                        <ul>
+                            <li><img ng-src="{{tweet.user.profile_image_url}}"/></li>
+                            <span class="meta-sep">&bull;</span>
+                            <li>{{tweet.created_at}}</li>
+                            <!--<li><a href="#" title="" rel="category tag">Ghost</a></li>-->
+                            <span class="meta-sep">&bull;</span>
+                        </ul>
+                    </div>
+
+                </header>
+
+                <div class="entry-content">
+                    <p>{{tweet.text}}</p>
+                </div>
+
+            </article>
+
+        </div>
+
+        <div id="sidebar" class="four columns">
+
+            <div class="widget widget_search">
+
+                <form ng-submit="hc.tapFollowTerm()">
+
+                    <input type="text" ng-model="hc.term" value="Add new term here..." onblur="if(this.value == '') { this.value = 'Add new term here...'; }" onfocus="if (this.value == 'Add new term here...') { this.value = ''; }" class="text-search">
+                    <input type="submit" value="" class="submit-search">
+
+                </form>
+            </div>
+
+
+            <div class="widget widget_tags">
+                <h3>Tracking Terms</h3>
+
+                <div class="tagcloud group">
+                    <a href="#" ng-click="hc.tapForgetTerm(term)" ng-repeat="term in hc.trackingTerms">{{term}}</a>
+                </div>
+
+                <h3>Tracking Terms Hash</h3>
+
+                <h5>{{hc.hashTrackingTerms}}</h5>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+</div>
