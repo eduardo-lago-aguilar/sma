@@ -70,7 +70,7 @@ trait Queries extends EventSourcing {
       case _ => None
     }.to(Sink.actorRef(trackingWsActor, PoisonPill))
 
-    val outgoingTraffic: Source[Strict, NotUsed.type] = Source.actorRef[Tweet](10, OverflowStrategy.fail)
+    val outgoingTraffic: Source[Strict, NotUsed.type] = Source.actorRef[Tweet](1000, OverflowStrategy.fail)
       .mapMaterializedValue { outgoingActor =>
         trackingWsActor ! Connecting(outgoingActor)
         NotUsed
