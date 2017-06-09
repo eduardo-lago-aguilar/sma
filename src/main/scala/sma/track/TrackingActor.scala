@@ -6,8 +6,6 @@ import sma.reactive.ReactiveStreamWrapper
 import sma.track.TrackingActor.{Connecting, HashTrackingTerms}
 import sma.twitter.Tweet
 
-import scala.util.Random
-
 object TrackingActor {
   def props(): Props = Props(classOf[TrackingActor])
 
@@ -20,16 +18,17 @@ object TrackingActor {
 class TrackingActor extends Particle with EventSourcing {
   override def receive: Receive = {
     case Connecting(wsActor) =>
-      logReceiving("is connecting")
+      log.info("Tracking actor is connecting....")
       context become connected(wsActor)
   }
 
   def connected(wsActor: ActorRef): Receive = {
-    case HashTrackingTerms(htt) =>
-      logReceiving(s"starts tracking with hash = ${htt}")
-      ReactiveStreamWrapper(system, s"tracker_${htt}_${Random.nextInt()}", Props(new Tracker(htt, self)))
-    case t: Tweet =>
-      logReceiving("forwarding tweet to ws actor!")
-      wsActor ! t
+    case HashTrackingTerms(hashTrackingTerms) =>
+      log.info(s"Tracking actor is starting a new QueryTracker with hash = ${hashTrackingTerms}")
+      val name = s"query_tracker_${hashTrackingTerms}_${java.util.UUID.randomUUID.toString}"
+      ReactiveStreamWrapper(system, name, Props(new QueryTracker(hashTrackingTerms, self)))
+    case tweet: Tweet =>
+      log.info(s"Tracking actor received a tweet from Tracker with id = ${tweet.id}, tweet is being forwarded to websocket")
+      wsActor ! tweet
   }
 }
