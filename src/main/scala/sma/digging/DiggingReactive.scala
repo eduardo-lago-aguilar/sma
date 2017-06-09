@@ -6,7 +6,6 @@ import akka.stream.scaladsl.{Sink, Source}
 import sma.eventsourcing.Receiving
 import sma.json.Json
 import sma.reactive.ReactiveWrappedActor
-import sma.storing.Redis
 
 import scala.collection.immutable.SortedSet
 import scala.concurrent.Future
@@ -28,7 +27,7 @@ abstract class DiggingReactive(topic: String) extends ReactiveWrappedActor with 
   }
 
   def proccess(bulk: BulkDigging) = {
-    receiving(bulk.mkString)
+    logReceiving(bulk.mkString)
     Source(bulk().toVector)
       .runForeach(dig => digProccess(dig))
   }

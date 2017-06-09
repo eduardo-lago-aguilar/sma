@@ -19,7 +19,7 @@ class TwitterFeeder(topic: String) extends ReactiveWrappedActor with Receiving {
   override def receive = {
     case tweet: Tweet =>
       sender() ! TweetReply()
-      receiving(s"receiving tweet with id ${tweet.id} -> storing message at redis ${tweet.hashTrackingTerms}")
+      logReceiving(s"receiving tweet with id ${tweet.id} -> storing message at redis ${tweet.hashTrackingTerms}")
       storeTweet(tweet)
   }
 

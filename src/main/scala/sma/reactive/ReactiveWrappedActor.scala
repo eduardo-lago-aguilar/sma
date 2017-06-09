@@ -12,7 +12,7 @@ trait ReactiveWrappedActor extends Particle with EventSourcing {
   val batchPeriod = 2 seconds
   val batchSize = 1000
 
-  starting
+  logStarting
 
   override def preStart: Unit = reactive
 

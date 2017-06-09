@@ -19,7 +19,7 @@ class Digger extends Particle with Committing {
 
       commit(message, digTopic(message.user, message.network))
 
-      receiving(message.mkString)
+      logReceiving(message.mkString)
   }
 
   def commit(message: Digging, topic: String) = {

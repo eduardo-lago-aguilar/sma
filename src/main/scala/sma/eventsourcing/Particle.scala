@@ -1,24 +1,24 @@
 package sma.eventsourcing
 
-import akka.actor.{PoisonPill, ActorLogging, Actor}
+import akka.actor.{Actor, ActorLogging, PoisonPill}
 
 trait Particle extends Actor with ActorLogging {
 
-  def starting = log.info(s"--> [${self.path.name}] actor is starting")
+  def logStarting = log.info(s"--> [${self.path.name}] actor is starting")
 
-  def stopped = log.info(s"--> [${self.path.name}] actor stopped")
+  def logStopped = log.info(s"--> [${self.path.name}] actor stopped")
 
-  def receiving(text: String) = log.info(s"--> [${self.path.name}] actor received ${text}")
+  def logReceiving(text: String) = log.info(s"--> [${self.path.name}] actor received ${text}")
 
-  def unknown = log.error(s"--> [${self.path.name}] actor received an unknown message")
+  def logUnknown = log.error(s"--> [${self.path.name}] actor received an unknown message")
 
   def suicide = self ! PoisonPill
 
   override def unhandled(message: Any): Unit = {
-    unknown
+    logUnknown
     suicide
   }
 
-  override def postStop(): Unit = stopped
+  override def postStop(): Unit = logStopped
 
 }

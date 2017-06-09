@@ -25,7 +25,7 @@ class TwitterNetworker(val topic: String) extends DiggingReactive(topic) with Co
   override def receive = {
     case heartbeat: Heartbeat =>
       sender() ! HeartbeatReply()
-      receiving(s"heartbeat, current tracking terms: [${trackingTerms.mkString(", ")}]")
+      logReceiving(s"heartbeat, current tracking terms: [${trackingTerms.mkString(", ")}]")
       streamFromTwitter(heartbeat.version)
     case bulk: BulkDigging =>
       sender() ! BulkDiggingReply()
