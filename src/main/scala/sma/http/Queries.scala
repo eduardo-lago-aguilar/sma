@@ -1,17 +1,22 @@
 package sma.http
 
 import akka.NotUsed
+import akka.actor.PoisonPill
 import akka.http.scaladsl.common.EntityStreamingSupport
+import akka.http.scaladsl.model.ws.TextMessage.Strict
 import akka.http.scaladsl.model.ws.{Message, TextMessage}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.directives.PathDirectives.path
 import akka.http.scaladsl.server.directives.RouteDirectives.complete
-import akka.stream.scaladsl.{Flow, Source}
+import akka.stream.OverflowStrategy
+import akka.stream.scaladsl.{Flow, Sink, Source}
 import akka.util.Timeout
 import sma.Settings
 import sma.eventsourcing.{EventSourcing, User}
 import sma.storing.Redis.{lrangeStream, smembersStream}
+import sma.track.TrackingActor
+import sma.track.TrackingActor.Connecting
 import sma.twitter.{TrackingTerm, Tweet, TweetJsonHelper}
 
 import scala.concurrent.duration._
@@ -48,8 +53,32 @@ trait Queries extends EventSourcing {
       get {
         handleWebSocketMessages(echoFlow)
       }
+    } ~ path(Segment / "tweets") {
+      userAtNetwork =>
+        get {
+          handleWebSocketMessages(createTermsTrackingFlow())
+        }
     }
 
+  }
+
+  def createTermsTrackingFlow() = {
+    val trackingWsActor = system.actorOf(TrackingActor.props())
+
+    val incomingTraffic: Sink[Message, NotUsed] = Flow[Message].map {
+      case TextMessage.Strict(text) => TrackingActor.HashTrackingTerms(hashTrackingTerms = text)
+      case _ => None
+    }.to(Sink.actorRef(trackingWsActor, PoisonPill))
+
+    val outgoingTraffic: Source[Strict, NotUsed.type] = Source.actorRef[Tweet](10, OverflowStrategy.fail)
+      .mapMaterializedValue { outgoingActor =>
+        trackingWsActor ! Connecting(outgoingActor)
+        NotUsed
+      }.map {
+      case tweet: Tweet => TextMessage(tweet.id)
+    }
+
+    Flow.fromSinkAndSource(incomingTraffic, outgoingTraffic)
   }
 
   def trackingTerms(userAtNetwork: String): Source[String, NotUsed] = smembersStream(digTopic(userAtNetwork))

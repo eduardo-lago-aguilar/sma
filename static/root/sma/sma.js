@@ -1,6 +1,6 @@
 (function () {
 
-    var unwrap = function(response){
+    var unwrap = function (response) {
         return response.data;
     };
 
@@ -52,7 +52,7 @@
         //
         $$.trackingTermsSet = new SortedSet();
         $$.trackingTerms = $$.trackingTermsSet.toArray();
-        insertTrackingTerms(_.map(trackingTerms, function(term){
+        insertTrackingTerms(_.map(trackingTerms, function (term) {
             return term.term;
         }));
 
@@ -60,7 +60,19 @@
         // tweets init
         //
         $$.tweets = [];
-        retrieveTweets();
+        //retrieveTweets();
+
+        var tweetsAddress = "ws://localhost:8080/" + $stateParams.userAtNetwork + "/tweets";
+        var socket = new WebSocket(tweetsAddress);
+        socket.onopen = function () {
+            console.info("connected to" + tweetsAddress);
+
+            socket.onmessage = function (event) {
+                console.info("received " + event.data);
+            }
+
+            socket.send($$.hashTrackingTerms);
+        }
 
         //
         // tracking terms
