@@ -9,7 +9,8 @@ import akka.http.scaladsl.server.directives.PathDirectives.path
 import akka.http.scaladsl.server.directives.RouteDirectives.complete
 import akka.stream.scaladsl.{Flow, Source}
 import akka.util.Timeout
-import sma.eventsourcing.EventSourcing
+import sma.Settings
+import sma.eventsourcing.{EventSourcing, User}
 import sma.storing.Redis.{lrangeStream, smembersStream}
 import sma.twitter.{TrackingTerm, Tweet, TweetJsonHelper}
 
@@ -39,6 +40,10 @@ trait Queries extends EventSourcing {
         get {
           complete(board(hashTrackingTerms).map(json => Tweet(TweetJsonHelper.decodeId(json).get.toString, json, Seq(), timestamp, hashTrackingTerms)))
         }
+    } ~ path("users") {
+      get {
+        complete(Source(Settings.theUsers).map(name => User(name)))
+      }
     } ~ path("ws-echo") {
       get {
         handleWebSocketMessages(echoFlow)
