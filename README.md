@@ -71,3 +71,51 @@ An running demo of applied [Event-Sourcing](https://martinfowler.com/eaaDev/Even
 20. `SocketTracker` forwards the tweet to the real Websocket, during the process tweets are JSON string encoded
 
 21. Query routes send tweets corresponding to tracking terms back to UI, tweets are JSON decoded and shown
+
+## Install Guide
+
+1. In `application.conf` edit Twitter settings:
+
+```
+twitter {
+  consumer_key = ""
+  consumer_secret = ""
+  token = ""
+  token_secret = ""
+}
+```
+
+2. Install Redis
+
+3. Install Kafka and Zookeeper
+
+4. Start Zookeeper and Kafka:
+
+```
+$ cd ~/kafka_2.11-0.10.2.0/
+$ bin/zookeeper-server-start.sh config/zookeeper.properties
+$ bin/kafka-server-start.sh config/server.properties
+```
+
+5. Run the application:
+
+```
+sbt run
+```
+
+6. Open browser at `http://localhost:8080`
+
+## More settings
+Go to `application.conf` to tune more settings
+
+## About UI
+* AngularJS + Angular UI Router
+* CryptoJS
+* HTML5 Websocket
+* JS-Sorted-Set
+* UnderscoreJS
+* JQuery
+
+## Thanks to
+* [Examples using Akka HTTP with Streaming](https://github.com/calvinlfer/akka-http-streaming-response-examples)
+* [ Processing Tweets with Kafka Streams in Scala](https://github.com/jpzk/twitterstream)
