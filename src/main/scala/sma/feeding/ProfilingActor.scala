@@ -3,18 +3,18 @@ package sma.feeding
 import sma.digging.{BulkDigging, BulkDiggingReply, DiggingReactive}
 import sma.storing.Redis.{sadd, sremove}
 
-object Profiling {
+object ProfilingActor {
   val nick = "profiler"
 }
 
-class Profiling(topic: String) extends DiggingReactive(topic) {
+class ProfilingActor(topic: String) extends DiggingReactive(topic) {
   override def receive = {
     case bulk: BulkDigging =>
       sender() ! BulkDiggingReply()
       super.proccess(bulk)
   }
 
-  override def consumerGroup = s"${self.path.name}_${Profiling.nick}"
+  override def consumerGroup = s"${self.path.name}_${ProfilingActor.nick}"
 
   override def doFollow(term: String): Unit = {
     super.doFollow(term)
