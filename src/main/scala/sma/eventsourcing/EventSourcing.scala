@@ -3,12 +3,16 @@ package sma.eventsourcing
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 
-trait EventSourcing  {
-  implicit val system: ActorSystem = ActorSystem("sma")
+trait EventSourcing {
 
-  def digTopic(follower: String, network: String): String = {
-    s"${follower}_at_${network}"
-  }
+  implicit val system = ActorSystem("sma")
+  implicit val materializer = ActorMaterializer()
+  implicit val executionContext = system.dispatcher
+  implicit var closingApp = false
+
+  val bootstrapServers = "localhost:9092"
+
+  def digTopic(follower: String, network: String): String = s"${follower}_at_${network}"
 
   def digTopic(userAtNetwork: String): String = {
     val Array(user, network) = splittingUserAt(userAtNetwork)
@@ -17,16 +21,6 @@ trait EventSourcing  {
 
   def replyTopic(topic: String) = s"${topic}_reply"
 
-  def splittingUserAt(userAtNetwork: String) = {
-    val user = userAtNetwork.split("@")(0)
-    val network = userAtNetwork.split("@")(1)
-    Array(user, network)
-  }
-  implicit val materializer = ActorMaterializer()
-  implicit val executionContext = system.dispatcher
-
-  val bootstrapServers: String = "localhost:9092"
-
-  implicit var closingApp = false
+  def splittingUserAt(userAtNetwork: String) = Array(userAtNetwork.split("@")(0), userAtNetwork.split("@")(1))
 
 }
