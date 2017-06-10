@@ -34,17 +34,13 @@ abstract class DiggingReactive(topic: String) extends ReactiveWrappedActor with 
 
   def consumerGroup: String
 
-  def doFollow(term: String): Unit = {
-    trackingTerms += term
-  }
+  def doFollow(term: String): Unit = trackingTerms += term
 
-  def doForget(term: String): Unit = {
-    trackingTerms -= term
-  }
+  def doForget(term: String): Unit = trackingTerms -= term
 
-  private def digging(record: ConsumerRecordType): Digging = Json.decode[Digging](record.value())
+  private def digging(record: ConsumerRecordType) = Json.decode[Digging](record.value())
 
-  private def digProccess(dig: Digging): Unit = {
+  private def digProccess(dig: Digging) = {
     dig.action match {
       case "follow" => doFollow(dig.term)
       case "forget" => doForget(dig.term)
