@@ -22,7 +22,7 @@ trait ReactiveWrappedActor extends Particle with EventSourcing {
     log.info(s"--> [${self.path.name}] creating reactive stream")
     consume.onComplete {
       case Failure(ex) =>
-        log.error(ex, s"--> [${self.path.name}] stream failed, stopping the actor")
+        log.error(ex, s"--> [${self.path.name}] stream failed!")
         suicide
       case Success(_) =>
         log.info(s"--> [${self.path.name}] gracefully shutdown")

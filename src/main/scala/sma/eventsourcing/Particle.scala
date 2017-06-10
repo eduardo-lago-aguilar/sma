@@ -12,7 +12,10 @@ trait Particle extends Actor with ActorLogging {
 
   def logUnknown = log.error(s"--> [${self.path.name}] actor received an unknown message")
 
-  def suicide = self ! PoisonPill
+  def suicide = {
+    log.error(s"--> [${self.path.name}] stopping the actor")
+    self ! PoisonPill
+  }
 
   override def unhandled(message: Any): Unit = {
     logUnknown
