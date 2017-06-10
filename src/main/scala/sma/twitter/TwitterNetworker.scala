@@ -1,5 +1,6 @@
 package sma.twitter
 
+import akka.actor.SupervisorStrategy.Restart
 import akka.actor._
 import akka.pattern.ask
 import akka.stream.scaladsl.Source
@@ -40,6 +41,12 @@ class TwitterNetworker(val topic: String) extends DiggingReactive(topic) with Co
 
   override def consumerGroup = s"${self.path.name}_${TwitterNetworker.nick}"
 
+  override val supervisorStrategy =
+    OneForOneStrategy(maxNrOfRetries = 10, withinTimeRange = 30 seconds) {
+      case _: Exception                => Restart
+    }
+
+
   private def heartbeat: Unit = {
     Source.tick(0 milliseconds, heartbeatPeriod, ())
       .async
@@ -75,7 +82,7 @@ class TwitterNetworker(val topic: String) extends DiggingReactive(topic) with Co
     TweetJsonHelper.decodeId(json) match {
       case Some(id) =>
         val tweet = Tweet(id.toString, json, trackingTerms.toSeq, timestamp, hashTrackingTerms)
-        log.info(s"storing tweet with ID = ${id.toString}")
+        log.info(s"R E C E I V I N G  T W E E T  F R O M  T W I T T E R  A P I  W I T H  I D  =  ${id.toString}")
         producer.send(twitterProducerRecord(tweet, replyTopic(topic)))
       case None =>
         log.error("unable to decode tweet JSON")
