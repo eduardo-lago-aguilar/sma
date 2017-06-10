@@ -6,7 +6,7 @@ import sma.json.Json
 
 object TweetJsonHelper extends Receiving {
 
-  def decodeId(json: String): Option[Any] = Json.decode[Map[String, Any]](json).get("id_str")
+  def decodeId(json: String): Option[Any] = Json.decodeFromString[Map[String, Any]](json).get("id_str")
 
   def decodeTweet(record: ConsumerRecordType): Tweet = Json.decode[Tweet](record.value())
 

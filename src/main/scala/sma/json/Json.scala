@@ -14,7 +14,16 @@ object Json {
   type ParseException = JsonParseException
   type UnrecognizedPropertyException = UPE
 
+  def encode(value: Any): Array[Byte] = mapper.writeValueAsBytes(value)
+
+  def encodeAsString(value: Any): String = mapper.writeValueAsString(value)
+
+  def decode[T: Manifest](value: Array[Byte]): T = mapper.readValue(value, typeReference[T])
+
+  def decodeFromString[T: Manifest](value: String): T = mapper.readValue(value, typeReference[T])
+
   private val mapper = new ObjectMapper()
+
   mapper.registerModule(DefaultScalaModule)
   mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL)
 
@@ -33,19 +42,6 @@ object Json {
 
       def getOwnerType = null
     }
-  }
-
-  def encode(value: Any): Array[Byte] = mapper.writeValueAsBytes(value)
-  def encodeAsString(value: Any): String = mapper.writeValueAsString(value)
-
-  def decode[T: Manifest](value: Array[Byte]): T = mapper.readValue(value, typeReference[T])
-
-  def decode[T: Manifest](value: String): T = mapper.readValue(value, typeReference[T])
-
-  val prettyPrinterWriter = {
-    val mapper = new ObjectMapper()
-    mapper.registerModule(DefaultScalaModule)
-    mapper.writerWithDefaultPrettyPrinter
   }
 
 }
