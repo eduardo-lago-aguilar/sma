@@ -15,10 +15,10 @@ import akka.util.Timeout
 import sma.Settings
 import sma.eventsourcing.{EventSourcing, User}
 import sma.json.Json
-import sma.storing.Redis.{lrangeStream, smembersStream}
+import sma.storing.Redis.smembersStream
 import sma.track.TrackingActor
 import sma.track.TrackingActor.Connecting
-import sma.twitter.{TrackingTerm, Tweet, TweetJsonHelper}
+import sma.twitter.{TrackingTerm, Tweet}
 
 import scala.concurrent.duration._
 
@@ -30,29 +30,15 @@ trait Queries extends EventSourcing {
 
   implicit val jsonStreamingSupport = EntityStreamingSupport.json()
 
-  val echoFlow: Flow[Message, Message, _] = Flow[Message].map {
-    case TextMessage.Strict(text) => TextMessage(s"I got your message: $text!")
-    case _ => TextMessage(s"Sorry I didn't quite get that")
-  }
-
   val queryRoutes: Route = {
     path(Segment / "terms") {
       userAtNetwork =>
         get {
           complete(trackingTerms(userAtNetwork).map(TrackingTerm))
         }
-    } ~ path(Segment / "board" / Segment) {
-      (userAtNetwork, hashTrackingTerms) =>
-        get {
-          complete(board(hashTrackingTerms).map(json => Tweet(TweetJsonHelper.decodeId(json).get.toString, json, Seq(), timestamp, hashTrackingTerms)))
-        }
     } ~ path("users") {
       get {
-        complete(Source(Settings.theUsers).map(name => User(name)))
-      }
-    } ~ path("ws-echo") {
-      get {
-        handleWebSocketMessages(echoFlow)
+        complete(getUsers)
       }
     } ~ path(Segment / "tweets") {
       userAtNetwork =>
@@ -62,6 +48,10 @@ trait Queries extends EventSourcing {
     }
 
   }
+
+  def trackingTerms(userAtNetwork: String): Source[String, NotUsed] = smembersStream(digTopic(userAtNetwork))
+
+  def getUsers = Source(Settings.theUsers).map(name => User(name))
 
   def createTermsTrackingFlow() = {
     val trackingWsActor = system.actorOf(TrackingActor.props())
@@ -81,9 +71,5 @@ trait Queries extends EventSourcing {
 
     Flow.fromSinkAndSource(incomingTraffic, outgoingTraffic)
   }
-
-  def trackingTerms(userAtNetwork: String): Source[String, NotUsed] = smembersStream(digTopic(userAtNetwork))
-
-  def board(hashTrackingTerms: String) = lrangeStream(hashTrackingTerms)
 
 }
