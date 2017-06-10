@@ -11,6 +11,10 @@ import sma.eventsourcing.Hash._
 
 import scala.concurrent.duration._
 
+case class Heartbeat(version: Int)
+
+case class HeartbeatReply()
+
 object TwitterNetworker {
   val nick = "twitter_networker"
 }
@@ -41,7 +45,7 @@ class TwitterNetworker(val topic: String) extends DiggingReactiveActor(topic) wi
 
   override val supervisorStrategy =
     OneForOneStrategy(maxNrOfRetries = 10, withinTimeRange = 30 seconds) {
-      case _: Exception                => Restart
+      case _: Exception => Restart
     }
 
 
@@ -49,7 +53,7 @@ class TwitterNetworker(val topic: String) extends DiggingReactiveActor(topic) wi
     Source.tick(0 milliseconds, heartbeatPeriod, ())
       .async
       .runForeach(_ => {
-        if(!streaming) {
+        if (!streaming) {
           // only heartbeats when not streaming
           self ? Heartbeat(lastVersion)
         }
@@ -69,7 +73,7 @@ class TwitterNetworker(val topic: String) extends DiggingReactiveActor(topic) wi
 
       tweetSource.close
     } else {
-      if(trackingTerms.size == 0) {
+      if (trackingTerms.size == 0) {
         log.info(s"--> [${self.path.name}] giving up since no tracking terms !")
       }
     }
