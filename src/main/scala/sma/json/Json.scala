@@ -36,6 +36,7 @@ object Json {
   }
 
   def encode(value: Any): Array[Byte] = mapper.writeValueAsBytes(value)
+  def encodeAsString(value: Any): String = mapper.writeValueAsString(value)
 
   def decode[T: Manifest](value: Array[Byte]): T = mapper.readValue(value, typeReference[T])
 
