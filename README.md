@@ -22,7 +22,7 @@ An running demo of applied [Event-Sourcing](https://martinfowler.com/eaaDev/Even
 * JSON streaming to UI with Akka Streams (Akka Http Spray Json)
 * Idempotent `HTTP` verbs are used
 
-## Use Cases
+## Use Case
 
 1. UI issues `PUT` or `DELETE` to `/<user@network>/<term>` indicating that `<user>` wants to track/untrack a given term at `<network>`, minimal acknowledgment is returned. For instance:
 
@@ -84,6 +84,21 @@ twitter {
   token_secret = ""
 }
 ```
+
+Twitter environment variables take more precedence than `application.conf`, these are the supported:
+
+```
+$ export TWITTER_CONSUMER_KEY="..."
+
+$ export TWITTER_CONSUMER_SECRET="..."
+
+$ export TWITTER_TOKEN="..."
+
+$ export TWITTER_TOKEN_SECRET="..."
+
+```
+
+I prefer to use [direnv](http://direnv.net/) to set directory specific environment variables
 
 2. Install Redis
 
