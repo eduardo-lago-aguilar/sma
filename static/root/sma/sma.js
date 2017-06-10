@@ -31,18 +31,18 @@
         );
     }
 
-    angular.module("sma", ["ui.router"]).config(["$stateProvider", "$locationProvider", config])
+    angular.module("sma", ["ui.router"]).config(["$stateProvider", "$locationProvider", config]);
 
 
-    function HomeController($rootScope, $stateParams, $http, users, trackingTerms) {
+    function HomeController($rootScope, $timeout, $stateParams, $http, users, trackingTerms) {
         var $$ = this;
 
         //
         // user @ network init
         //
         $$.userAtNetwork = $stateParams.userAtNetwork;
-        $$.user = $stateParams.userAtNetwork.split("@")[0]
-        $$.network = $stateParams.userAtNetwork.split("@")[1]
+        $$.user = $stateParams.userAtNetwork.split("@")[0];
+        $$.network = $stateParams.userAtNetwork.split("@")[1];
         $$.users = _.map(users, function (user) {
             return user.user;
         });
@@ -60,20 +60,46 @@
         // tweets init
         //
         $$.tweets = [];
+        $$.count = $$.tweets.length;
 
-        var tweetsAddress = "ws://localhost:8080/" + $stateParams.userAtNetwork + "/tweets";
-        var socket = new WebSocket(tweetsAddress);
-        socket.onopen = function () {
-            console.info("connected to" + tweetsAddress);
+        var socket;
+        var timer = null;
 
-            socket.onmessage = function (event) {
-                var tweet = JSON.parse(JSON.parse(event.data).body);
-                $$.tweets.push(tweet);
-                $rootScope.$applyAsync()
-            }
+        startTracking();
 
-            socket.send($$.hashTrackingTerms);
+        function startTracking() {
+            socket = createSocket();
         }
+
+        function websocketAddress(s) {
+            var l = window.location;
+            return ((l.protocol === "https:") ? "wss://" : "ws://") + l.host + l.pathname + s;
+        }
+
+        function createSocket() {
+            var socket = new WebSocket(websocketAddress($stateParams.userAtNetwork + "/tweets"));
+            socket.onopen = function () {
+                console.info("connection opened, sending tracking request " + $$.hashTrackingTerms);
+                socket.onmessage = receiveTweet;
+                socket.send($$.hashTrackingTerms);
+            };
+            socket.onclose = function () {
+                console.error("connection closed, scheduling tracking request in a few seconds")
+                if (timer != null) {
+                    $timeout.cancel(timer);
+                }
+                timer = $timeout(startTracking(), 2000);
+            };
+            return socket;
+        };
+
+        function receiveTweet(event) {
+            var encodedTweet = JSON.parse(event.data);
+            var tweet = JSON.parse(encodedTweet.body);
+            $$.tweets.unshift(tweet);
+            $$.count = $$.tweets.length;
+            $rootScope.$applyAsync()
+        };
 
         //
         // tracking terms
@@ -101,14 +127,14 @@
             $http.put($stateParams.userAtNetwork + "/" + term).then(function () {
                 insertTrackingTerms([term]);
                 $$.term = "";
-                retrieveTweets();
+                socket = createSocket();
             });
         }
 
         $$.tapForgetTerm = function (term) {
             $http.delete($stateParams.userAtNetwork + "/" + term).then(function () {
                 removeTrackingTerm(term);
-                retrieveTweets();
+                socket = createSocket();
             });
         }
 
@@ -127,6 +153,6 @@
         }
     }
 
-    angular.module("sma").controller("HomeController", ["$rootScope", "$stateParams", "$http", 'users', 'trackingTerms', HomeController]);
+    angular.module("sma").controller("HomeController", ["$rootScope", "$timeout", "$stateParams", "$http", 'users', 'trackingTerms', HomeController]);
 
 })();
