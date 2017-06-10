@@ -6,25 +6,19 @@ import sma.eventsourcing.{Committing, Particle}
 import sma.json.Json
 
 object Digger {
-  def props(): Props = {
-    Props(classOf[Digger])
-  }
+  def props(): Props = Props(classOf[Digger])
 }
 
 class Digger extends Particle with Committing {
 
   override def receive = {
-    case message: Digging =>
+    case digging: Digging =>
+      logReceiving(digging.mkString)
       sender() ! DiggingReply()
-
-      commit(message, digTopic(message.user, message.network))
-
-      logReceiving(message.mkString)
+      commit(digging, digTopic(digging.user, digging.network))
   }
 
-  def commit(message: Digging, topic: String) = {
-    producer.send(diggingProducerRecord(message, topic))
-  }
+  def commit(message: Digging, topic: String) = producer.send(diggingProducerRecord(message, topic))
 
   private def diggingProducerRecord(dig: Digging, topic: String) = {
     val key = Json.encode(dig.key)
