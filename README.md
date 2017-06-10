@@ -134,3 +134,4 @@ Go to `application.conf` to tune more settings
 ## Thanks to
 * [Examples using Akka HTTP with Streaming](https://github.com/calvinlfer/akka-http-streaming-response-examples)
 * [ Processing Tweets with Kafka Streams in Scala](https://github.com/jpzk/twitterstream)
+* [KEEP IT SIMPLE](http://www.styleshout.com/free-templates/keep-it-simple/)
