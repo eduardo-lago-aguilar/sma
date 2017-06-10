@@ -1,3 +1,3 @@
-package sma.eventsourcing
+package sma.profiling
 
 case class User(user: String)
