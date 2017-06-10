@@ -4,12 +4,10 @@ import akka.actor.SupervisorStrategy.Restart
 import akka.actor._
 import akka.pattern.ask
 import akka.stream.scaladsl.Source
-import org.apache.kafka.clients.producer.ProducerRecord
 import sma.Settings
 import sma.digging.{BulkDigging, BulkDiggingReply, DiggingReactive}
+import sma.eventsourcing.Committing
 import sma.eventsourcing.Hash._
-import sma.eventsourcing.{Committing, TrackingTerms}
-import sma.json.Json
 
 import scala.concurrent.duration._
 
@@ -83,16 +81,10 @@ class TwitterNetworker(val topic: String) extends DiggingReactive(topic) with Co
       case Some(id) =>
         val tweet = Tweet(id.toString, json, trackingTerms.toSeq, hashTrackingTerms)
         log.info(s"R E C E I V I N G  T W E E T  F R O M  T W I T T E R  A P I  W I T H  I D  =  ${id.toString}")
-        producer.send(twitterProducerRecord(tweet, replyTopic(topic)))
+        producer.send(TweetJsonHelper.twitterProducerRecord(tweet, replyTopic(topic)))
       case None =>
         log.error("unable to decode tweet JSON")
     }
-  }
-
-  private def twitterProducerRecord(tweet: Tweet, targetTopic: String) = {
-    val key = Json.encode(TrackingTerms(tweet.trackingTerms))
-    val value = Json.encode(tweet)
-    new ProducerRecord[Array[Byte], Array[Byte]](targetTopic, key, value)
   }
 
 }

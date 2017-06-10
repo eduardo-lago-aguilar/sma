@@ -3,9 +3,7 @@ package sma.twitter
 import akka.Done
 import akka.pattern.ask
 import akka.stream.scaladsl.Sink
-import org.apache.kafka.clients.producer.ProducerRecord
-import sma.eventsourcing.{Committing, Receiving, TrackingTerms}
-import sma.json.Json
+import sma.eventsourcing.{Committing, Receiving}
 import sma.reactive.ReactiveWrappedActor
 import sma.storing.Redis.redis
 
@@ -37,16 +35,9 @@ class TwitterFeeder(topic: String) extends ReactiveWrappedActor with Receiving w
       if (!exists) {
         log.info(s"storing tweet with id = ${tweet.id} at topic ${tweet.hashTrackingTerms}")
         redis.set(httId, 1)
-        producer.send(twitterProducerRecord(tweet, tweet.hashTrackingTerms))
+        producer.send(TweetJsonHelper.twitterProducerRecord(tweet, tweet.hashTrackingTerms))
       }
     })
   }
-
-  private def twitterProducerRecord(tweet: Tweet, targetTopic: String) = {
-    val key = Json.encode(TrackingTerms(tweet.trackingTerms))
-    val value = Json.encode(tweet)
-    new ProducerRecord[Array[Byte], Array[Byte]](targetTopic, key, value)
-  }
-
 
 }
