@@ -20,27 +20,26 @@ class TwitterFeeder(topic: String) extends ReactiveWrappedActor with Receiving w
   override def receive = {
     case tweet: Tweet =>
       sender() ! TweetReply()
-      logReceiving(s"receiving tweet with id ${tweet.id} -> storing message at redis ${tweet.hashTrackingTerms}")
+      logReceiving(s"tweet with id ${tweet.id}")
       storeTweet(tweet)
   }
 
-  override def consume: Future[Done] = consumeLinearAsync
+  override def consume: Future[Done] = {
+    val consumerGroup = s"${self.path.name}__twitter_feeder"
+    plainSource(topic, consumerGroup)
+      .mapAsync(1)(record => self ? decodeTweet(record))
+      .runWith(Sink.ignore)
+  }
 
   private def storeTweet(tweet: Tweet) = {
     val httId: String = s"${tweet.hashTrackingTerms}_${tweet.id}"
     redis.exists(httId).foreach(exists => {
       if (!exists) {
+        log.info(s"storing tweet with id = ${tweet.id} at topic ${tweet.hashTrackingTerms}")
         redis.set(httId, 1)
         producer.send(twitterProducerRecord(tweet, tweet.hashTrackingTerms))
       }
     })
-  }
-
-  private def consumeLinearAsync: Future[Done] = {
-    val consumerGroup = s"${self.path.name}__twitter_feeder"
-    plainSource(topic, consumerGroup)
-      .mapAsync(1)(record => self ? decodeTweet(record))
-      .runWith(Sink.ignore)
   }
 
   private def twitterProducerRecord(tweet: Tweet, targetTopic: String) = {
