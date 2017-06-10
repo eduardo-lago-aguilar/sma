@@ -14,6 +14,7 @@ import akka.stream.scaladsl.{Flow, Sink, Source}
 import akka.util.Timeout
 import sma.Settings
 import sma.eventsourcing.{EventSourcing, User}
+import sma.json.Json
 import sma.storing.Redis.{lrangeStream, smembersStream}
 import sma.track.TrackingActor
 import sma.track.TrackingActor.Connecting
@@ -75,7 +76,7 @@ trait Queries extends EventSourcing {
         trackingWsActor ! Connecting(outgoingActor)
         NotUsed
       }.map {
-      case tweet: Tweet => TextMessage(tweet.id)
+      case tweet: Tweet => TextMessage(Json.encodeAsString(tweet))
     }
 
     Flow.fromSinkAndSource(incomingTraffic, outgoingTraffic)
