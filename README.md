@@ -22,7 +22,7 @@ An running demo of applied [Event-Sourcing](https://martinfowler.com/eaaDev/Even
 * JSON streaming to UI with Akka Streams (Akka Http Spray Json)
 * Idempotent `HTTP` verbs are used
 
-## Fast Data Architecture Use Cases
+## Use Cases
 
 1. UI issues `PUT` or `DELETE` to `/<user@network>/<term>` indicating that `<user>` wants to track/untrack a given term at `<network>`, minimal acknowledgment is returned. For instance:
 
@@ -56,12 +56,18 @@ An running demo of applied [Event-Sourcing](https://martinfowler.com/eaaDev/Even
 
 13. `TwitterFeeder` uses the tweet's `hash_of_tracking_terms` and the tweet `id`, to check if the tweet is already on the list for that query, so tweets are never duplicated for a given set of tracking terms. `<hash_of_tracking_terms>_<tweet_id>` is used as key in Redis
 
-14. If tweet is not stored already then, `TwitterFeeder` stores the tweet the the corresponding query list, using the `<hash_of_tracking_terms>` as key
+14. `TwitterFeeder` marks the tweet as stored using `<hash_of_tracking_terms>_<tweet_id>` as key
 
-15. `TwitterFeeder` marks the tweet as stored using `<hash_of_tracking_terms>_<tweet_id>` as key
+15. If tweet is not stored already then, `TwitterFeeder` stream the tweet to kafka topic named `<hash_of_tracking_terms>`
 
-16. Since UI keeps its own collection of tracking terms, then a `GET /ed@twittter/board/<hash_of_tracking_terms>` is issued
+16. Since UI keeps its own collection of tracking terms, then a Websocket tracking message is sent to `/ed@twittter/tweets` is issued with content = `<hash_of_tracking_terms>`
 
-17. Query routes (see [CQRS](https://martinfowler.com/bliki/CQRS.html)) receive the request and stream tweets message back from the corresponding Redis list, by just using `<hash_of_tracking_terms>` as key
+17. Query routes (see [CQRS](https://martinfowler.com/bliki/CQRS.html)) receive the request and creates 2 actors. A `SocketTracking` representing the Websocket and `ReactiveTweetTracker` that consumers the tweets from the query corresponding kafka topic, that is `<hash_of_tracking_terms>`
 
-18. Query routes send tweets corresponding to tracking terms back to UI
+18. `ReactiveTweetTracker` consumes the stream of tweet from the kafka topic named `<hash_of_tracking_terms>`
+
+19. `ReactiveTracker` forwards the tweet to `SocketTracker`
+
+20. `SocketTracker` forwards the tweet to the real Websocket, during the process tweets are JSON string encoded
+
+21. Query routes send tweets corresponding to tracking terms back to UI, tweets are JSON decoded and shown
