@@ -66,7 +66,7 @@ class TwitterNetworker(val topic: String) extends DiggingReactiveActor(topic) wi
       streaming = true
       log.info(s"--> [${self.path.name}] streaming from twitter to |${topic}| w/ terms: (${trackingTerms.mkString(", ")})")
 
-      val tweetSource = new TweetSource(Settings.oAuth1, trackingTerms.toVector)
+      val tweetSource = new TweetSource(Settings.twitter.oAuth1, trackingTerms.toVector)
       val count = tweetSource.iterate(maxNumberOfTweets, storeTweet(sha256(trackingTerms.toSeq)), cancelling)
 
       log.info(s"--> [${self.path.name}] finishing streaming from twitter to |${topic}| w/ terms: (${trackingTerms.mkString(", ")}), brought ${count} messages!")

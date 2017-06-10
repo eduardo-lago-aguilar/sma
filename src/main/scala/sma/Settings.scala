@@ -24,17 +24,21 @@ object Settings {
 
   def defaultNetwork = config.getString("default_network")
 
-  def consumerKey = Properties.envOrElse("TWITTER_CONSUMER_KEY", twitter.getString("consumer_key"))
+  object twitter {
 
-  def consumerSecret = Properties.envOrElse("TWITTER_CONSUMER_SECRET", twitter.getString("consumer_secret"))
+    def consumerKey = Properties.envOrElse("TWITTER_CONSUMER_KEY", twitter.getString("consumer_key"))
 
-  def token = Properties.envOrElse("TWITTER_TOKEN", twitter.getString("token"))
+    def consumerSecret = Properties.envOrElse("TWITTER_CONSUMER_SECRET", twitter.getString("consumer_secret"))
 
-  def tokenSecret = Properties.envOrElse("TWITTER_TOKEN_SECRET", twitter.getString("token_secret"))
+    def token = Properties.envOrElse("TWITTER_TOKEN", twitter.getString("token"))
 
-  def oAuth1 = new OAuth1(consumerKey, consumerSecret, token, tokenSecret)
+    def tokenSecret = Properties.envOrElse("TWITTER_TOKEN_SECRET", twitter.getString("token_secret"))
+
+    def oAuth1 = new OAuth1(consumerKey, consumerSecret, token, tokenSecret)
+
+    private val twitter = config.getConfig("twitter")
+  }
+
 
   private val config: Config = ConfigFactory.parseFile(new File("application.conf"))
-
-  private val twitter = config.getConfig("twitter")
 }
