@@ -1,12 +1,10 @@
 package sma
 
-import akka.actor.ActorRef
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.{IncomingConnection, ServerBinding}
 import akka.http.scaladsl.server.RouteConcatenation._
 import akka.stream.scaladsl.{Sink, Source}
 import sma.booting.{FeedersBoot, NetworkersBoot, ProfilesBoot}
-import sma.digging.Digger
 import sma.http._
 
 import scala.concurrent.duration._
@@ -14,8 +12,6 @@ import scala.concurrent.{Await, Future}
 import scala.sys.ShutdownHookThread
 
 object Main extends App with Commands with Queries with Static with NetworkersBoot with FeedersBoot with ProfilesBoot {
-
-  implicit val digger: ActorRef = system.actorOf(Digger.props(), "digger")
 
   if (Settings.wakeupNetworkers) {
     wakeupNetworkers
