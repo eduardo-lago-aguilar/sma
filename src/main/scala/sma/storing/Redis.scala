@@ -3,11 +3,11 @@ package sma.storing
 import akka.NotUsed
 import akka.stream.scaladsl.Source
 import redis.RedisClient
-import sma.eventsourcing.Topics
+import sma.eventsourcing.EventSourcing
 
 import scala.concurrent.Future
 
-object Redis extends Topics {
+object Redis extends EventSourcing {
   val redis = RedisClient()
 
   def smembers(key: String) = redis.smembers[String](key)
