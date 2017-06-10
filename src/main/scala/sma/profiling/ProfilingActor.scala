@@ -1,13 +1,13 @@
 package sma.profiling
 
-import sma.digging.{BulkDigging, BulkDiggingReply, DiggingReactive}
+import sma.digging.{BulkDigging, BulkDiggingReply, DiggingReactiveActor}
 import sma.storing.Redis.{sadd, sremove}
 
 object ProfilingActor {
   val nick = "profiler"
 }
 
-class ProfilingActor(topic: String) extends DiggingReactive(topic) {
+class ProfilingActor(topic: String) extends DiggingReactiveActor(topic) {
   override def receive = {
     case bulk: BulkDigging =>
       sender() ! BulkDiggingReply()

@@ -5,7 +5,7 @@ import akka.actor._
 import akka.pattern.ask
 import akka.stream.scaladsl.Source
 import sma.Settings
-import sma.digging.{BulkDigging, BulkDiggingReply, DiggingReactive}
+import sma.digging.{BulkDigging, BulkDiggingReply, DiggingReactiveActor}
 import sma.eventsourcing.Committing
 import sma.eventsourcing.Hash._
 
@@ -15,7 +15,7 @@ object TwitterNetworker {
   val nick = "twitter_networker"
 }
 
-class TwitterNetworker(val topic: String) extends DiggingReactive(topic) with Committing {
+class TwitterNetworker(val topic: String) extends DiggingReactiveActor(topic) with Committing {
 
   val heartbeatPeriod = 15 seconds
   val maxNumberOfTweets = 200

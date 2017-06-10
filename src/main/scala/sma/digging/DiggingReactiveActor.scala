@@ -10,7 +10,7 @@ import sma.reactive.ReactiveWrappedActor
 import scala.collection.immutable.SortedSet
 import scala.concurrent.Future
 
-abstract class DiggingReactive(topic: String) extends ReactiveWrappedActor with Receiving {
+abstract class DiggingReactiveActor(topic: String) extends ReactiveWrappedActor with Receiving {
 
   var trackingTerms = SortedSet[String]()
   var lastVersion = 0
