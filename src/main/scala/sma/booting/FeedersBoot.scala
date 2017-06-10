@@ -2,12 +2,9 @@ package sma.booting
 
 import akka.actor.Props
 import akka.stream.scaladsl.Source
-import akka.stream.scaladsl.Source._
-import sma.Settings
 import sma.Settings.{networks, theUsers}
 import sma.eventsourcing.EventSourcing
 import sma.reactive.ReactiveStreamWrapper
-import sma.storing.Redis._
 import sma.twitter.TwitterFeeder
 
 trait FeedersBoot extends EventSourcing {
@@ -17,7 +14,7 @@ trait FeedersBoot extends EventSourcing {
         .runForeach(net => {
           val topic = replyTopic(digTopic(user, net))
           val name = s"${topic}_${TwitterFeeder.nick}"
-          ReactiveStreamWrapper(system, name, Props(new TwitterFeeder(topic)))
+          ReactiveStreamWrapper(name, Props(new TwitterFeeder(topic)))
         }))
   }
 

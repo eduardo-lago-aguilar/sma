@@ -26,7 +26,7 @@ class TrackingActor extends Particle with EventSourcing {
     case HashTrackingTerms(hashTrackingTerms) =>
       log.info(s"Tracking actor is starting a new QueryTracker with hash = ${hashTrackingTerms}")
       val name = s"query_tracker_${hashTrackingTerms}_${java.util.UUID.randomUUID.toString}"
-      ReactiveStreamWrapper(system, name, Props(new QueryTracker(hashTrackingTerms, self)))
+      ReactiveStreamWrapper(name, Props(new QueryTracker(hashTrackingTerms, self)))
     case tweet: Tweet =>
       log.info(s"Tracking actor received a tweet from Tracker with id = ${tweet.id}, tweet is being forwarded to websocket")
       wsActor ! tweet

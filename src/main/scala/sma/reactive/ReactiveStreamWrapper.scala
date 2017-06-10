@@ -1,14 +1,13 @@
 package sma.reactive
 
-import akka.actor.{ActorRef, ActorSystem, Props}
+import akka.actor.{ActorRef, Props}
+import sma.eventsourcing.EventSourcing
 
 import scala.concurrent.duration._
 
-object ReactiveStreamWrapper {
-  def apply(implicit system: ActorSystem, childName: String, props: Props): ActorRef = {
+object ReactiveStreamWrapper extends EventSourcing {
+  def apply(childName: String, props: Props): ActorRef = {
     val name = s"supervisor_of_${childName}"
-
-    println(s"--> [${name}] creating supervisor")
 
     import akka.pattern.{Backoff, BackoffSupervisor}
 

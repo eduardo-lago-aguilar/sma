@@ -9,16 +9,19 @@ import scala.util.{Failure, Success}
 
 trait ReactiveWrappedActor extends Particle with EventSourcing {
   implicit val timeout = akka.util.Timeout(5 seconds)
+
   val batchPeriod = 2 seconds
+
   val batchSize = 1000
 
-  logStarting
-
-  override def preStart: Unit = reactive
+  override def preStart: Unit = {
+    logStarting
+    reactive
+  }
 
   def consume: Future[Done]
 
-  private def reactive: Unit = {
+  protected def reactive: Unit = {
     log.info(s"--> [${self.path.name}] creating reactive stream")
     consume.onComplete {
       case Failure(ex) =>

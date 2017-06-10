@@ -13,7 +13,7 @@ trait ProfilesBoot extends EventSourcing {
         .runForeach(net => {
           val topic: String = digTopic(user, net)
           val name = s"${topic}_${ProfilingActor.nick}"
-          ReactiveStreamWrapper(system, name, Props(new ProfilingActor(topic)))
+          ReactiveStreamWrapper(name, Props(new ProfilingActor(topic)))
         }))
   }
 
