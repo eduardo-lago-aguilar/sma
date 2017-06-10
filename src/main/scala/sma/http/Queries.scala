@@ -26,30 +26,32 @@ trait Queries extends EventSourcing {
 
   import sma.json.CustomJsonProtocol._
 
-  implicit val timeout = Timeout(5 seconds)
-
   implicit val jsonStreamingSupport = EntityStreamingSupport.json()
 
-  val queryRoutes: Route = trackingTermsRoute ~ usersRoute ~ tweetsRoute
+  val queryRoutes: Route = {
+    implicit val timeout = Timeout(5 seconds)
 
-  private val trackingTermsRoute: Route = path(Segment / "terms") {
-    userAtNetwork =>
-      get {
-        complete(trackingTerms(userAtNetwork).map(TrackingTerm))
-      }
-  }
-
-  private val usersRoute: Route = path("users") {
-    get {
-      complete(getUsers)
+    val trackingTermsRoute: Route = path(Segment / "terms") {
+      userAtNetwork =>
+        get {
+          complete(trackingTerms(userAtNetwork).map(TrackingTerm))
+        }
     }
-  }
 
-  private val tweetsRoute: Route = path(Segment / "tweets") {
-    userAtNetwork =>
+    val usersRoute: Route = path("users") {
       get {
-        handleWebSocketMessages(createTermsTrackingFlow())
+        complete(getUsers)
       }
+    }
+
+    val tweetsRoute: Route = path(Segment / "tweets") {
+      userAtNetwork =>
+        get {
+          handleWebSocketMessages(createTermsTrackingFlow())
+        }
+    }
+
+    trackingTermsRoute ~ usersRoute ~ tweetsRoute
   }
 
   private def trackingTerms(userAtNetwork: String): Source[String, NotUsed] = smembersStream(digTopic(userAtNetwork))
