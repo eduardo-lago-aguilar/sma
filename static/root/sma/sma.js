@@ -59,8 +59,8 @@
         //
         // tweets init
         //
-        $$.tweets = [];
-        $$.count = $$.tweets.length;
+        $$.tweets = {};
+        $$.count = Object.keys($$.tweets).length;
 
         var socket;
         var timer = null;
@@ -88,7 +88,7 @@
                 if (timer != null) {
                     $timeout.cancel(timer);
                 }
-                timer = $timeout(startTracking(), 2000);
+                timer = $timeout(startTracking(), 8000);
             };
             return socket;
         };
@@ -96,8 +96,8 @@
         function receiveTweet(event) {
             var encodedTweet = JSON.parse(event.data);
             var tweet = JSON.parse(encodedTweet.body);
-            $$.tweets.unshift(tweet);
-            $$.count = $$.tweets.length;
+            $$.tweets[tweet.id] = tweet;
+            $$.count = Object.keys($$.tweets).length;
             $rootScope.$applyAsync()
         };
 
