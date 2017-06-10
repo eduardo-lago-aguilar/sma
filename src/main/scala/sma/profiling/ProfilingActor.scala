@@ -1,4 +1,4 @@
-package sma.feeding
+package sma.profiling
 
 import sma.digging.{BulkDigging, BulkDiggingReply, DiggingReactive}
 import sma.storing.Redis.{sadd, sremove}

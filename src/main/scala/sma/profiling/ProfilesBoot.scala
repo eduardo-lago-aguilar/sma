@@ -1,10 +1,9 @@
-package sma.booting
+package sma.profiling
 
 import akka.actor.Props
 import akka.stream.scaladsl.Source
 import sma.Settings._
 import sma.eventsourcing.EventSourcing
-import sma.feeding.ProfilingActor
 import sma.reactive.ReactiveStreamWrapper
 
 trait ProfilesBoot extends EventSourcing {

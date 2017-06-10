@@ -4,8 +4,9 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.{IncomingConnection, ServerBinding}
 import akka.http.scaladsl.server.RouteConcatenation._
 import akka.stream.scaladsl.{Sink, Source}
-import sma.booting.{FeedersBoot, NetworkersBoot, ProfilesBoot}
+import sma.booting.{FeedersBoot, NetworkersBoot}
 import sma.http._
+import sma.profiling.ProfilesBoot
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
