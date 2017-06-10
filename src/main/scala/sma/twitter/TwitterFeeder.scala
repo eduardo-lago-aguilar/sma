@@ -31,7 +31,6 @@ class TwitterFeeder(topic: String) extends ReactiveWrappedActor with Receiving w
     redis.exists(httId).foreach(exists => {
       if (!exists) {
         redis.set(httId, 1)
-        redis.lpush(tweet.hashTrackingTerms, tweet.body)
         producer.send(twitterProducerRecord(tweet, tweet.hashTrackingTerms))
       }
     })
