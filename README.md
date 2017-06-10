@@ -6,20 +6,20 @@ An running demo of applied [Event-Sourcing](https://martinfowler.com/eaaDev/Even
 ## Architecure Guidelines / Tech Cocktail
 
 * [Event-Sourcing](https://martinfowler.com/eaaDev/EventSourcing.html) & [CQRS](https://martinfowler.com/bliki/CQRS.html)
-* Scalable with HA storage (Kafka)
-* Resource manager (Zookeeper)
+* Scalable with HA storage [Kafka](https://kafka.apache.org)
+* Resource manager [Zookeeper](http://zookeeper.apache.org/)
 * Not a big deal to have a delay between a tweet post & visualization
-* Eventual consistency embraced in favor of Availability and Partitioning Tolerance (CAP)
-* Streaming architecture for social media feed gets ingested for scalable & durable store (Akka Streams)
-* REST data ingestion via Microservices: follow/forget tracking terms (Akka Http + Actor Model)
+* Eventual consistency embraced in favor of Availability and Partitioning Tolerance [CAP](https://en.wikipedia.org/wiki/CAP_theorem)
+* Streaming architecture for social media feed gets ingested for scalable & durable store [Akka Streams](http://akka.io/docs/)
+* REST data ingestion via Microservices: follow/forget tracking terms ([Akka Http](http://akka.io/docs/) + [Actor Model](https://www.infoq.com/news/2014/10/intro-actor-model))
 * REST data polling/streaming board
 * Low latency processing
-* Fault isolation, Actor Model & Microservices: minimizes concurrency issues, decouples processing steps via Message-Driven (Akka Actor Model)
-* Expressive programming language & framework with appropiate DSL (Scala + Typesafe Ecosystem: Akka, Akka Streams, Akka Http)
-* Reactive Actors aware of commits in persistent topics (Kafka + Reactive Kafka)
-* Complementary storage for fast fetching of Twitter feed (Redis)
-* JSON serialization for persistent topics (Jackson JSON)
-* JSON streaming to UI with Akka Streams (Akka Http Spray Json)
+* Fault isolation, Actor Model & Microservices: minimizes concurrency issues, decouples processing steps via Message-Driven ([Actor Model](https://www.infoq.com/news/2014/10/intro-actor-model))
+* Expressive programming language & framework with appropiate DSL (Scala + Typesafe Ecosystem: [Akka](http://akka.io/docs/), [Akka Streams](http://akka.io/docs/), [Akka Http](http://akka.io/docs/))
+* Reactive Actors aware of commits in persistent topics ([Kafka](https://kafka.apache.org) + [Reactive Kafka](https://github.com/akka/reactive-kafka))
+* Complementary for deduplication of tweets ([Redis](https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-redis-on-ubuntu-16-04))
+* JSON serialization for persistent topics ([Jackson JSON](https://github.com/FasterXML/jackson))
+* JSON streaming to UI with Akka Streams ([Akka Http Spray Json]([Akka Streams](http://akka.io/docs/)))
 * Idempotent `HTTP` verbs are used
 
 ## Use Case
@@ -100,11 +100,11 @@ $ export TWITTER_TOKEN_SECRET="..."
 
 I prefer to use [direnv](http://direnv.net/) to set directory specific environment variables
 
-2. Install Redis
+2. Install [Redis](https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-redis-on-ubuntu-16-04)
 
-3. Install Kafka and Zookeeper
+3. Install [Kafka and Zookeeper](https://kafka.apache.org/quickstart)
 
-4. Start Zookeeper and Kafka:
+4. Start [Kafka and Zookeeper](https://kafka.apache.org/quickstart):
 
 ```
 $ cd ~/kafka_2.11-0.10.2.0/
