@@ -1,9 +1,7 @@
 package sma.feeding
 
-import sma.digging.{BulkDiggingReply, BulkDigging, DiggingReactive}
-import sma.storing.Redis
-
-import scala.concurrent.Future
+import sma.digging.{BulkDigging, BulkDiggingReply, DiggingReactive}
+import sma.storing.Redis.{sadd, sremove}
 
 object Profiling {
   val nick = "profiler"
@@ -20,11 +18,11 @@ class Profiling(topic: String) extends DiggingReactive(topic) {
 
   override def doFollow(term: String): Unit = {
     super.doFollow(term)
-    Redis.sadd(topic, term)
+    sadd(topic, term)
   }
 
   override def doForget(term: String): Unit = {
     super.doForget(term)
-    Redis.sremove(topic, term)
+    sremove(topic, term)
   }
 }

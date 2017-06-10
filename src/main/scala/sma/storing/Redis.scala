@@ -1,11 +1,8 @@
 package sma.storing
 
-import akka.NotUsed
 import akka.stream.scaladsl.Source
 import redis.RedisClient
 import sma.eventsourcing.EventSourcing
-
-import scala.concurrent.Future
 
 object Redis extends EventSourcing {
   val redis = RedisClient()
@@ -17,8 +14,4 @@ object Redis extends EventSourcing {
   def sadd(key: String, interests: String*) = redis.sadd[String](key, interests: _*)
 
   def sremove(key: String, interests: String*) = redis.srem[String](key, interests: _*)
-
-  def lrange(key: String): Future[Seq[String]] = redis.lrange[String](key, 0, -1)
-
-  def lrangeStream(key: String): Source[String, NotUsed] = Source.fromFuture(lrange(key)).mapConcat(seq => seq.toStream)
 }
