@@ -8,8 +8,6 @@ trait EventSourcing extends Topics {
 
   val bootstrapServers: String = "localhost:9092"
 
-  def timestamp: Long = System.currentTimeMillis()
-
   implicit var closingApp = false
 
 }

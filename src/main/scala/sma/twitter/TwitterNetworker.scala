@@ -81,7 +81,7 @@ class TwitterNetworker(val topic: String) extends DiggingReactive(topic) with Co
   private def storeTweet(hashTrackingTerms: String)(json: String) = {
     TweetJsonHelper.decodeId(json) match {
       case Some(id) =>
-        val tweet = Tweet(id.toString, json, trackingTerms.toSeq, timestamp, hashTrackingTerms)
+        val tweet = Tweet(id.toString, json, trackingTerms.toSeq, hashTrackingTerms)
         log.info(s"R E C E I V I N G  T W E E T  F R O M  T W I T T E R  A P I  W I T H  I D  =  ${id.toString}")
         producer.send(twitterProducerRecord(tweet, replyTopic(topic)))
       case None =>
