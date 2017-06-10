@@ -30,30 +30,33 @@ trait Queries extends EventSourcing {
 
   implicit val jsonStreamingSupport = EntityStreamingSupport.json()
 
-  val queryRoutes: Route = {
-    path(Segment / "terms") {
-      userAtNetwork =>
-        get {
-          complete(trackingTerms(userAtNetwork).map(TrackingTerm))
-        }
-    } ~ path("users") {
-      get {
-        complete(getUsers)
-      }
-    } ~ path(Segment / "tweets") {
-      userAtNetwork =>
-        get {
-          handleWebSocketMessages(createTermsTrackingFlow())
-        }
-    }
+  val queryRoutes: Route = trackingTermsRoute ~ usersRoute ~ tweetsRoute
 
+  private val trackingTermsRoute: Route = path(Segment / "terms") {
+    userAtNetwork =>
+      get {
+        complete(trackingTerms(userAtNetwork).map(TrackingTerm))
+      }
   }
 
-  def trackingTerms(userAtNetwork: String): Source[String, NotUsed] = smembersStream(digTopic(userAtNetwork))
+  private val usersRoute: Route = path("users") {
+    get {
+      complete(getUsers)
+    }
+  }
 
-  def getUsers = Source(Settings.theUsers).map(name => User(name))
+  private val tweetsRoute: Route = path(Segment / "tweets") {
+    userAtNetwork =>
+      get {
+        handleWebSocketMessages(createTermsTrackingFlow())
+      }
+  }
 
-  def createTermsTrackingFlow() = {
+  private def trackingTerms(userAtNetwork: String): Source[String, NotUsed] = smembersStream(digTopic(userAtNetwork))
+
+  private def getUsers = Source(Settings.theUsers).map(name => User(name))
+
+  private def createTermsTrackingFlow() = {
     val trackingWsActor = system.actorOf(TrackingActor.props())
 
     val incomingTraffic: Sink[Message, NotUsed] = Flow[Message].map {
@@ -68,7 +71,6 @@ trait Queries extends EventSourcing {
       }.map {
       case tweet: Tweet => TextMessage(Json.encodeAsString(tweet))
     }
-
     Flow.fromSinkAndSource(incomingTraffic, outgoingTraffic)
   }
 
