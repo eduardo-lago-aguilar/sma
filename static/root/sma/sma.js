@@ -34,7 +34,7 @@
     angular.module("sma", ["ui.router"]).config(["$stateProvider", "$locationProvider", config])
 
 
-    function HomeController($stateParams, $http, users, trackingTerms) {
+    function HomeController($rootScope, $stateParams, $http, users, trackingTerms) {
         var $$ = this;
 
         //
@@ -60,7 +60,6 @@
         // tweets init
         //
         $$.tweets = [];
-        //retrieveTweets();
 
         var tweetsAddress = "ws://localhost:8080/" + $stateParams.userAtNetwork + "/tweets";
         var socket = new WebSocket(tweetsAddress);
@@ -68,7 +67,9 @@
             console.info("connected to" + tweetsAddress);
 
             socket.onmessage = function (event) {
-                console.info("received " + event.data);
+                var tweet = JSON.parse(JSON.parse(event.data).body);
+                $$.tweets.push(tweet);
+                $rootScope.$applyAsync()
             }
 
             socket.send($$.hashTrackingTerms);
@@ -126,6 +127,6 @@
         }
     }
 
-    angular.module("sma").controller("HomeController", ["$stateParams", "$http", 'users', 'trackingTerms', HomeController]);
+    angular.module("sma").controller("HomeController", ["$rootScope", "$stateParams", "$http", 'users', 'trackingTerms', HomeController]);
 
 })();
