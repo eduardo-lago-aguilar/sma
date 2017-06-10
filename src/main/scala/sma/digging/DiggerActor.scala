@@ -13,8 +13,8 @@ class DiggerActor extends Particle with Committing {
 
   override def receive = {
     case digging: Digging =>
-      logReceiving(digging.mkString)
       sender() ! DiggingReply()
+      logReceiving(digging.mkString)
       commit(digging, digTopic(digging.user, digging.network))
   }
 

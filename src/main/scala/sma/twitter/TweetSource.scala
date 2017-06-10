@@ -7,19 +7,24 @@ import com.twitter.hbc.core.endpoint.StatusesFilterEndpoint
 import com.twitter.hbc.core.processor.StringDelimitedProcessor
 import com.twitter.hbc.core.{Constants, HttpHosts}
 import com.twitter.hbc.httpclient.auth.OAuth1
+import sma.Settings
 import sma.eventsourcing.EventSourcing
 
 import scala.collection.JavaConverters
 
-class TweetSource(oAuth1: OAuth1, trackingTerms: Seq[String]) extends EventSourcing {
-  val msgQueue = new LinkedBlockingQueue[String](2000)
+object TweetSource {
+  def oAuth1 = new OAuth1(Settings.twitter.consumerKey, Settings.twitter.consumerSecret, Settings.twitter.token, Settings.twitter.tokenSecret)
+}
+
+class TweetSource(trackingTerms: Seq[String]) extends EventSourcing {
+  val msgQueue = new LinkedBlockingQueue[String](Settings.twitter.messageQueueSize)
 
   val hosebirdEndpoint = new StatusesFilterEndpoint()
   hosebirdEndpoint.trackTerms(JavaConverters.seqAsJavaList(trackingTerms))
 
   val builder = new ClientBuilder()
     .hosts(new HttpHosts(Constants.STREAM_HOST))
-    .authentication(oAuth1)
+    .authentication(TweetSource.oAuth1)
     .endpoint(hosebirdEndpoint)
     .processor(new StringDelimitedProcessor(msgQueue))
 

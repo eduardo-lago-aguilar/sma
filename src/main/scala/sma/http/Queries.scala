@@ -13,9 +13,10 @@ import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.{Flow, Sink, Source}
 import akka.util.Timeout
 import sma.Settings
-import sma.eventsourcing.{EventSourcing, User}
+import sma.eventsourcing.EventSourcing
 import sma.http.SocketTrackingActor.Connecting
 import sma.json.Json
+import sma.profiling.User
 import sma.storing.Redis.smembersStream
 import sma.twitter.{HashTrackingTerms, TrackingTerm, Tweet}
 
@@ -28,7 +29,7 @@ trait Queries extends EventSourcing {
   implicit val jsonStreamingSupport = EntityStreamingSupport.json()
 
   val queryRoutes: Route = {
-    implicit val timeout = Timeout(5 seconds)
+    implicit val timeout = Timeout(Settings.http.timeout seconds)
 
     val trackingTermsRoute: Route = path(Segment / "terms") {
       userAtNetwork =>

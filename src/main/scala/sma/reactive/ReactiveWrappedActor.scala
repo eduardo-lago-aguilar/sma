@@ -1,6 +1,7 @@
 package sma.reactive
 
 import akka.Done
+import sma.Settings
 import sma.eventsourcing.{EventSourcing, Particle}
 
 import scala.concurrent.Future
@@ -8,11 +9,7 @@ import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
 trait ReactiveWrappedActor extends Particle with EventSourcing {
-  implicit val timeout = akka.util.Timeout(5 seconds)
-
-  val batchPeriod = 2 seconds
-
-  val batchSize = 1000
+  implicit val timeout = akka.util.Timeout(Settings.reactive.timeout seconds)
 
   override def preStart: Unit = {
     logStarting

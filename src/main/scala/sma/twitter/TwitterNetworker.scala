@@ -21,8 +21,9 @@ object TwitterNetworker {
 
 class TwitterNetworker(val topic: String) extends DiggingReactiveActor(topic) with Committing {
 
-  val heartbeatPeriod = 15 seconds
-  val maxNumberOfTweets = 200
+  val heartbeatPeriod = Settings.twitter.heartbeatPeriod seconds
+  val tweetsBatchSize = Settings.twitter.tweetsBatchSize
+
   private var streaming = false
 
   override def receive = {
@@ -66,8 +67,8 @@ class TwitterNetworker(val topic: String) extends DiggingReactiveActor(topic) wi
       streaming = true
       log.info(s"--> [${self.path.name}] streaming from twitter to |${topic}| w/ terms: (${trackingTerms.mkString(", ")})")
 
-      val tweetSource = new TweetSource(Settings.twitter.oAuth1, trackingTerms.toVector)
-      val count = tweetSource.iterate(maxNumberOfTweets, storeTweet(sha256(trackingTerms.toSeq)), cancelling)
+      val tweetSource = new TweetSource(trackingTerms.toVector)
+      val count = tweetSource.iterate(tweetsBatchSize, storeTweet(sha256(trackingTerms.toSeq)), cancelling)
 
       log.info(s"--> [${self.path.name}] finishing streaming from twitter to |${topic}| w/ terms: (${trackingTerms.mkString(", ")}), brought ${count} messages!")
 

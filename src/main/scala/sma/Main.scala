@@ -1,15 +1,14 @@
 package sma
 
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.Http.{IncomingConnection, ServerBinding}
 import akka.http.scaladsl.server.RouteConcatenation._
-import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.scaladsl.Sink
 import sma.booting.{FeedersBoot, NetworkersBoot}
 import sma.http._
 import sma.profiling.ProfilesBoot
 
+import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
 import scala.sys.ShutdownHookThread
 
 object Main extends App with Commands with Queries with Static with NetworkersBoot with FeedersBoot with ProfilesBoot {
@@ -33,18 +32,13 @@ object Main extends App with Commands with Queries with Static with NetworkersBo
   def boot: ShutdownHookThread = {
     val httpService = Http()
 
-    val HOST = "127.0.0.1"
-    val PORT = 8080
+    val serverSource = httpService.bind(interface = Settings.http.host, Settings.http.port)
 
-    val serverSource: Source[IncomingConnection, Future[ServerBinding]] =
-      httpService.bind(interface = HOST, PORT)
+    val binding = serverSource.to(Sink.foreach { connection =>
+      connection handleWith routes
+    }).run()
 
-    val binding: Future[ServerBinding] =
-      serverSource.to(Sink.foreach { connection =>
-        connection handleWith routes
-      }).run()
-
-    println(s"Server is now online at http://$HOST:$PORT\n")
+    println(s"Server is now online at http://${Settings.http.host}:${Settings.http.port}\n")
 
     //shutdown Hook
 

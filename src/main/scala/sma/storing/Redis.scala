@@ -2,10 +2,11 @@ package sma.storing
 
 import akka.stream.scaladsl.Source
 import redis.RedisClient
+import sma.Settings
 import sma.eventsourcing.EventSourcing
 
 object Redis extends EventSourcing {
-  val redis = RedisClient()
+  val redis = RedisClient(host = Settings.redis.host, port = Settings.redis.port)
 
   def smembers(key: String) = redis.smembers[String](key)
 

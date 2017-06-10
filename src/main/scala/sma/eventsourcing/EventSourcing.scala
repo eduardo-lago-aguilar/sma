@@ -10,8 +10,6 @@ trait EventSourcing {
   implicit val executionContext = system.dispatcher
   implicit var closingApp = false
 
-  val bootstrapServers = "localhost:9092"
-
   def digTopic(follower: String, network: String): String = s"${follower}_at_${network}"
 
   def digTopic(userAtNetwork: String): String = {

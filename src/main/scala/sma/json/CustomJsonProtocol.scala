@@ -1,7 +1,7 @@
 package sma.json
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import sma.eventsourcing.User
+import sma.profiling.User
 import sma.twitter.TrackingTerm
 import spray.json.DefaultJsonProtocol
 
