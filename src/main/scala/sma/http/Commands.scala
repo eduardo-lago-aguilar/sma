@@ -8,14 +8,14 @@ import akka.http.scaladsl.server.directives.PathDirectives.path
 import akka.http.scaladsl.server.directives.RouteDirectives.complete
 import akka.pattern.ask
 import akka.util.Timeout
-import sma.digging.{Digger, Digging, DiggingReply}
+import sma.digging.{DiggerActor, Digging, DiggingReply}
 import sma.eventsourcing.EventSourcing
 
 import scala.concurrent.duration._
 
 trait Commands extends EventSourcing {
 
-  def digger() = system.actorOf(Digger.props(), "digger")
+  def digger() = system.actorOf(DiggerActor.props(), "digger")
 
   val commandRoutes = path(Segment / Segment) {
     implicit val timeout = Timeout(5 seconds)

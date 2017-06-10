@@ -5,11 +5,11 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import sma.eventsourcing.{Committing, Particle}
 import sma.json.Json
 
-object Digger {
-  def props(): Props = Props(classOf[Digger])
+object DiggerActor {
+  def props(): Props = Props(classOf[DiggerActor])
 }
 
-class Digger extends Particle with Committing {
+class DiggerActor extends Particle with Committing {
 
   override def receive = {
     case digging: Digging =>
