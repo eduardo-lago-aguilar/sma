@@ -1,4 +1,4 @@
-package sma.track
+package sma.twitter
 
 import akka.Done
 import akka.actor.{ActorRef, Props}
@@ -6,20 +6,19 @@ import akka.pattern.ask
 import akka.stream.scaladsl.Sink
 import sma.eventsourcing.Receiving
 import sma.reactive.ReactiveWrappedActor
-import sma.twitter.{Tweet, TweetJsonHelper, TweetReply}
 
 import scala.concurrent.Future
 
-object QueryTracker {
-  def props(): Props = Props(classOf[QueryTracker])
+object ReactiveTweetTrackerActor {
+  def props(): Props = Props(classOf[ReactiveTweetTrackerActor])
 }
 
-class QueryTracker(topic: String, trackerActor: ActorRef) extends ReactiveWrappedActor with Receiving {
+class ReactiveTweetTrackerActor(topic: String, forwardingActor: ActorRef) extends ReactiveWrappedActor with Receiving {
   override def receive: Receive = {
     case tweet: Tweet =>
       sender() ! TweetReply()
-      logReceiving(s"a tweet message w/ id = ${tweet.id}, forwarding message to TrackerActor")
-      trackerActor ! tweet
+      logReceiving(s"a tweet message w/ id = ${tweet.id}, forwarding message to forwarding actor")
+      forwardingActor ! tweet
   }
 
   override def consume: Future[Done] = {

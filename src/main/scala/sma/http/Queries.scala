@@ -14,11 +14,10 @@ import akka.stream.scaladsl.{Flow, Sink, Source}
 import akka.util.Timeout
 import sma.Settings
 import sma.eventsourcing.{EventSourcing, User}
+import sma.http.SocketTrackingActor.Connecting
 import sma.json.Json
 import sma.storing.Redis.smembersStream
-import sma.track.TrackingActor
-import sma.track.TrackingActor.Connecting
-import sma.twitter.{TrackingTerm, Tweet}
+import sma.twitter.{HashTrackingTerms, TrackingTerm, Tweet}
 
 import scala.concurrent.duration._
 
@@ -59,10 +58,10 @@ trait Queries extends EventSourcing {
   private def getUsers = Source(Settings.theUsers).map(name => User(name))
 
   private def createTermsTrackingFlow() = {
-    val trackingWsActor = system.actorOf(TrackingActor.props())
+    val trackingWsActor = system.actorOf(SocketTrackingActor.props())
 
     val incomingTraffic: Sink[Message, NotUsed] = Flow[Message].map {
-      case TextMessage.Strict(text) => TrackingActor.HashTrackingTerms(hashTrackingTerms = text)
+      case TextMessage.Strict(text) => HashTrackingTerms(hashTrackingTerms = text)
       case _ => None
     }.to(Sink.actorRef(trackingWsActor, PoisonPill))
 

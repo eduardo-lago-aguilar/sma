@@ -4,6 +4,8 @@ case class TrackingTerm(term: String)
 
 case class TrackingTerms(terms: Seq[String])
 
+case class HashTrackingTerms(hashTrackingTerms: String)
+
 case class Tweet(id: String, body: String, trackingTerms: Seq[String], hashTrackingTerms: String)
 
 case class TweetReply()
