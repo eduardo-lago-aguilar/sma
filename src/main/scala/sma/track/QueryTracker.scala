@@ -6,7 +6,7 @@ import akka.pattern.ask
 import akka.stream.scaladsl.Sink
 import sma.eventsourcing.Receiving
 import sma.reactive.ReactiveWrappedActor
-import sma.twitter.{Tweet, TweetReply}
+import sma.twitter.{Tweet, TweetJsonHelper, TweetReply}
 
 import scala.concurrent.Future
 
@@ -25,7 +25,7 @@ class QueryTracker(topic: String, trackerActor: ActorRef) extends ReactiveWrappe
   override def consume: Future[Done] = {
     val consumerGroup = s"${self.path.name}__${java.util.UUID.randomUUID.toString}"
     plainSource(topic, consumerGroup)
-      .mapAsync(1)(record => self ? decodeTweet(record))
+      .mapAsync(1)(record => self ? TweetJsonHelper.decodeTweet(record))
       .runWith(Sink.ignore)
   }
 

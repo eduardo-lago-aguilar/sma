@@ -27,7 +27,7 @@ class TwitterFeeder(topic: String) extends ReactiveWrappedActor with Receiving w
   override def consume: Future[Done] = {
     val consumerGroup = s"${self.path.name}__twitter_feeder"
     plainSource(topic, consumerGroup)
-      .mapAsync(1)(record => self ? decodeTweet(record))
+      .mapAsync(1)(record => self ? TweetJsonHelper.decodeTweet(record))
       .runWith(Sink.ignore)
   }
 
