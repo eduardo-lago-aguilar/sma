@@ -59,8 +59,9 @@
         //
         // tweets init
         //
-        $$.tweets = {};
-        $$.count = Object.keys($$.tweets).length;
+        $$.tweets = [];
+        $$.tweetsHash = {};
+        $$.count = $$.tweets.length;
 
         var socket;
         var timer = null;
@@ -96,11 +97,16 @@
         function receiveTweet(event) {
             var encodedTweet = JSON.parse(event.data);
             var tweet = JSON.parse(encodedTweet.body);
+
             tweet.created_at = Date.parse(tweet.created_at);
             tweet.text = twttr.txt.autoLink(twttr.txt.htmlEscape(tweet.text));
-            $$.tweets[tweet.id] = tweet;
-            $$.count = Object.keys($$.tweets).length;
-            $rootScope.$applyAsync()
+
+            if ($$.tweetsHash[tweet.id] == undefined) {
+                $$.tweets.unshift(tweet);
+                $$.count = $$.tweets.length;
+                $$.tweetsHash[tweet.id] = true;
+                $rootScope.$applyAsync();
+            }
         };
 
         //
