@@ -31,7 +31,7 @@
         );
     }
 
-    angular.module("sma", ["ui.router"]).config(["$stateProvider", "$locationProvider", config]);
+    angular.module("sma", ["ui.router", "ngSanitize"]).config(["$stateProvider", "$locationProvider", config]);
 
 
     function HomeController($rootScope, $timeout, $stateParams, $http, users, trackingTerms) {
@@ -96,6 +96,8 @@
         function receiveTweet(event) {
             var encodedTweet = JSON.parse(event.data);
             var tweet = JSON.parse(encodedTweet.body);
+            tweet.created_at = Date.parse(tweet.created_at);
+            tweet.text = twttr.txt.autoLink(twttr.txt.htmlEscape(tweet.text));
             $$.tweets[tweet.id] = tweet;
             $$.count = Object.keys($$.tweets).length;
             $rootScope.$applyAsync()

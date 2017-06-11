@@ -38,16 +38,11 @@
 
                 <header class="entry-header">
 
-                    <!--<h2 class="entry-title">-->
-                        <!--<a href="single.html" title="">Hey, We Love Open Sans!</a>-->
-                    <!--</h2>-->
-
                     <div class="entry-meta">
                         <ul>
                             <li><img ng-src="{{tweet.user.profile_image_url}}"/></li>
                             <span class="meta-sep">&bull;</span>
-                            <li>{{tweet.created_at}}</li>
-                            <!--<li><a href="#" title="" rel="category tag">Ghost</a></li>-->
+                            <li>{{tweet.created_at | date: 'short'}}</li>
                             <span class="meta-sep">&bull;</span>
                         </ul>
                     </div>
@@ -55,7 +50,7 @@
                 </header>
 
                 <div class="entry-content">
-                    <p>{{tweet.text}}</p>
+                    <p ng-bind-html="tweet.text"></p>
                 </div>
 
             </article>
@@ -84,7 +79,7 @@
 
                 <h3>Tracking Terms Hash</h3>
 
-                <h5>{{hc.hashTrackingTerms}}</h5>
+                <h7>{{hc.hashTrackingTerms}}</h7>
 
             </div>
 
