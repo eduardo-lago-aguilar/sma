@@ -50,8 +50,8 @@
         //
         // tracking terms init
         //
-        $$.trackingTermsSet = new SortedSet();
-        $$.trackingTerms = $$.trackingTermsSet.toArray();
+        $$.trackingTermsSet = new Set();
+        $$.trackingTerms = [...$$.trackingTermsSet].sort();
         insertTrackingTerms(_.map(trackingTerms, function (term) {
             return term.term;
         }));
@@ -114,19 +114,19 @@
         //
         function insertTrackingTerms(trackingTerms) {
             trackingTerms.forEach(function (term) {
-                $$.trackingTermsSet.insert(term);
+                $$.trackingTermsSet.add(term);
             });
             updateTrackingTerms();
         }
 
         function removeTrackingTerm(term) {
-            $$.trackingTermsSet.remove(term);
+            $$.trackingTermsSet.delete(term);
             updateTrackingTerms();
         }
 
         function updateTrackingTerms() {
             $$.trackingTerms.length = 0;
-            Array.prototype.push.apply($$.trackingTerms, $$.trackingTermsSet.toArray().sort());
+            Array.prototype.push.apply($$.trackingTerms, [...$$.trackingTermsSet].sort());
             $$.hashTrackingTerms = CryptoJS.SHA256($$.trackingTerms.join(", "));
         }
 
