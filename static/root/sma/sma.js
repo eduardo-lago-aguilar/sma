@@ -85,7 +85,7 @@
                 socket.send($$.hashTrackingTerms);
             };
             socket.onclose = function () {
-                console.error("connection closed, scheduling tracking request in a few seconds")
+                console.info("connection closed, scheduling tracking request in a few seconds");
                 if (timer != null) {
                     $timeout.cancel(timer);
                 }
@@ -107,7 +107,7 @@
                 $$.tweetsHash[tweet.id] = true;
                 $rootScope.$applyAsync();
             }
-        };
+        }
 
         //
         // tracking terms
