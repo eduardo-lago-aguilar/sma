@@ -124,16 +124,14 @@ sbt run
 Go to `application.conf` to tune more settings
 
 ## About UI
-* AngularJS + Angular UI Router + Angular Sanitize
-* CryptoJS
-* HTML5 Websocket
-* JS-Sorted-Set
-* UnderscoreJS
-* JQuery
-* [Twitter extension for Showdown](https://github.com/showdownjs/twitter-extension)
+* [AngularJS](https://angularjs.org/) + [Angular UI Router](https://github.com/angular-ui/ui-router) + [Angular Sanitize](https://docs.angularjs.org/api/ngSanitize/service/$sanitize)
+* [CryptoJS](https://www.npmjs.com/package/crypto-js)
+* Native HTML5 Websocket
+* [UnderscoreJS](http://underscorejs.org/)
+* [JQuery](https://jquery.com/)
+* [Twitter Text JS](https://github.com/twitter/twitter-text/tree/master/js)
 
 ## Thanks to
 * [Examples using Akka HTTP with Streaming](https://github.com/calvinlfer/akka-http-streaming-response-examples)
 * [ Processing Tweets with Kafka Streams in Scala](https://github.com/jpzk/twitterstream)
 * [KEEP IT SIMPLE](http://www.styleshout.com/free-templates/keep-it-simple/)
-* [Twitter Text JS](https://github.com/twitter/twitter-text/tree/master/js)
