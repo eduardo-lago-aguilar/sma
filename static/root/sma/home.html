@@ -5,7 +5,13 @@
         <div class="header-content twelve columns">
 
             <h1 id="logo-text"><a href="#" title="">Social Media Aggregator</a></h1>
-            <p id="intro">{{hc.userAtNetwork}} | {{hc.count}} tweets</p>
+
+            <p id="intro" class="item">
+                <a href="#">
+                    <span>{{hc.userAtNetwork}} |</span>
+                    <span class="notify-badge">{{hc.count}}</span> tweets
+                </a>
+            </p>
 
         </div>
 
@@ -19,7 +25,8 @@
         <div class="row">
 
             <ul id="nav" class="nav">
-                <li ng-class='{current:(user == hc.user)}' ng-repeat="user in hc.users"><a href="/{{user}}@{{hc.network}}">{{user}}</a></li>
+                <li ng-class='{current:(user == hc.user)}' ng-repeat="user in hc.users"><a
+                        href="/{{user}}@{{hc.network}}">{{user}}</a></li>
             </ul>
 
         </div>
@@ -63,7 +70,9 @@
 
                 <form ng-submit="hc.tapFollowTerm()">
 
-                    <input type="text" ng-model="hc.term" value="Add new term here..." onblur="if(this.value == '') { this.value = 'Add new term here...'; }" onfocus="if (this.value == 'Add new term here...') { this.value = ''; }" class="text-search">
+                    <input type="text" ng-model="hc.term" value="Add new term here..."
+                           onblur="if(this.value == '') { this.value = 'Add new term here...'; }"
+                           onfocus="if (this.value == 'Add new term here...') { this.value = ''; }" class="text-search">
                     <input type="submit" value="" class="submit-search">
 
                 </form>
