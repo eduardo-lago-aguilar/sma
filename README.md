@@ -1,28 +1,31 @@
 # Social Media Aggregator
 
-An running demo of applied [Event-Sourcing](https://martinfowler.com/eaaDev/EventSourcing.html) and [CQRS](https://martinfowler.com/bliki/CQRS.html) architectural patterns. Social Media Aggregator (SMA) collects several social APIs entries into a composed stream visualized via user’s boards. Requirements are described in [Challenge](https://raw.githubusercontent.com/eduardo-lago-aguilar/sma/master/doc/redbee-ChallengeSocialmediaaggregator.pdf) document.
+An running demo of applied [Event-Sourcing](https://martinfowler.com/eaaDev/EventSourcing.html) and [CQRS](https://martinfowler.com/bliki/CQRS.html) architectural patterns. Social Media Aggregator (SMA) collects several social APIs entries into a composed stream visualized via user’s boards. Requirements are described in [Challenge](https://raw.githubusercontent.com/eduardo-lago-aguilar/sma/master/doc/redbee-ChallengeSocialmediaaggregator.pdf) document. Current implementation only supports Twitter, however additional social media can be easily appended.
 
-
+## Summary
+In a web UI users subscribes/un-subscribes to/from a given set of terms (called _tracking terms_), a background process crawls Twitter collecting and persisting all tweets resulting from the search, tweets are delivery back to UI in a non-blocking way.
 ## Architecure Guidelines / Tech Cocktail
 
 * [Event-Sourcing](https://martinfowler.com/eaaDev/EventSourcing.html) & [CQRS](https://martinfowler.com/bliki/CQRS.html)
-* Scalable with HA storage [Kafka](https://kafka.apache.org)
-* Resource manager [Zookeeper](http://zookeeper.apache.org/)
+* Scalable & HA storage: [Kafka](https://kafka.apache.org)
+* Resource manager: [Zookeeper](http://zookeeper.apache.org/)
 * Not a big deal to have a delay between a tweet post & visualization
-* Eventual consistency embraced in favor of Availability and Partitioning Tolerance [CAP](https://en.wikipedia.org/wiki/CAP_theorem)
-* Streaming architecture for social media feed gets ingested for scalable & durable store [Akka Streams](http://akka.io/docs/)
-* REST data ingestion via Microservices: follow/forget tracking terms ([Akka Http](http://akka.io/docs/) + [Actor Model](https://www.infoq.com/news/2014/10/intro-actor-model))
-* REST data polling/streaming board
+* Eventual consistency embraced in favor of Availability and Partitioning Tolerance: [CAP](https://en.wikipedia.org/wiki/CAP_theorem)
+* Scalable streaming architecture for social media feed as it gets ingested: [Akka Streams](http://akka.io/docs/)
+* REST data ingestion via Microservices by following/forgetting tracking terms: [Akka Http](http://akka.io/docs/) + [Actor Model](https://www.infoq.com/news/2014/10/intro-actor-model)
+* Reactive websockets, pushing (streaming) tweets from server to UI: [Akka Http](http://akka.io/docs/) + [Actor Model](https://www.infoq.com/news/2014/10/intro-actor-model) + [Reactive Kafka](https://github.com/akka/reactive-kafka)
 * Low latency processing
-* Fault isolation, Actor Model & Microservices: minimizes concurrency issues, decouples processing steps via Message-Driven ([Actor Model](https://www.infoq.com/news/2014/10/intro-actor-model))
-* Expressive programming language & framework with appropiate DSL (Scala + Typesafe Ecosystem: [Akka](http://akka.io/docs/), [Akka Streams](http://akka.io/docs/), [Akka Http](http://akka.io/docs/))
+* Fault isolation, [Actor Model](https://www.infoq.com/news/2014/10/intro-actor-model) & Microservices minimize concurrency issues, decouples processing steps by encouraging a Message-Driven pattern
+* Expressive programming language & framework with rich DSL: Scala + Typesafe Ecosystem
+* Mini-batch processing using [Akka Streams](http://akka.io/docs/)
 * Reactive Actors aware of commits in persistent topics ([Kafka](https://kafka.apache.org) + [Reactive Kafka](https://github.com/akka/reactive-kafka))
-* Complementary for deduplication of tweets ([Redis](https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-redis-on-ubuntu-16-04))
+* Complementary storage for deduplication of tweets ([Redis](https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-redis-on-ubuntu-16-04))
 * JSON serialization for persistent topics ([Jackson JSON](https://github.com/FasterXML/jackson))
 * JSON streaming to UI with Akka Streams ([Akka Http Spray Json]([Akka Streams](http://akka.io/docs/)))
-* Idempotent `HTTP` verbs are used
+* `PUT` and `DELETE` idempotent `HTTP` verbs
+* Minimalistic responsive UI
 
-## Use Case
+## Flow Explained
 
 1. UI issues `PUT` or `DELETE` to `/<user@network>/<term>` indicating that `<user>` wants to track/untrack a given term at `<network>`, minimal acknowledgment is returned. For instance:
 
@@ -31,10 +34,9 @@ An running demo of applied [Event-Sourcing](https://martinfowler.com/eaaDev/Even
 
 2. Command routes (see [CQRS](https://martinfowler.com/bliki/CQRS.html)) receive the request and forward it form of `Digging` message to `Digger` actor. `Digging` message is one of the types `follow` or `forget`
 
-![alt text](https://raw.githubusercontent.com/eduardo-lago-aguilar/sma/master/doc/sma_arch.png "Social Media Aggregator Architecture")
-
-
 3. `Digger` actor streams `follow` or `forget` message to user corresponding [Kafka Topic](https://kafka.apache.org/documentation/) at the specified network, topic name matches `ed@twitter`. Message in topic is `JSON` serialized on top of binary array
+
+![alt text](https://raw.githubusercontent.com/eduardo-lago-aguilar/sma/master/doc/sma_ui.png "Social Media Aggregator UI")
 
 4. A `Profiling` ([Reactive Kafka](https://github.com/akka/reactive-kafka)) actor consumes the `follow` or `forget` messages from user topic (`ed@twitter`)
 
@@ -43,6 +45,9 @@ An running demo of applied [Event-Sourcing](https://martinfowler.com/eaaDev/Even
 6. UI might request tracking terms whenever, issuing for instance `GET /ed@twitter/terms` to queries routes (see [CQRS](https://martinfowler.com/bliki/CQRS.html))
 
 7. Queries routes receives the request and fetches the tracking terms from Redis, using `ed@twitter` as key
+
+![alt text](https://raw.githubusercontent.com/eduardo-lago-aguilar/sma/master/doc/sma_arch.png "Social Media Aggregator Architecture")
+
 
 8. Queries routes send tracking terms back to UI
 
@@ -85,7 +90,7 @@ twitter {
 }
 ```
 
-Twitter environment variables take more precedence than `application.conf`, these are the supported:
+Twitter environment variables take precedence over `application.conf`:
 
 ```
 $ export TWITTER_CONSUMER_KEY="..."
@@ -98,7 +103,7 @@ $ export TWITTER_TOKEN_SECRET="..."
 
 ```
 
-I prefer to use [direnv](http://direnv.net/) to set directory specific environment variables
+I prefer to use [direnv](http://direnv.net/) to set directory specific environment variables:
 
 2. Install [Redis](https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-redis-on-ubuntu-16-04)
 
@@ -130,6 +135,9 @@ Go to `application.conf` to tune more settings
 * [UnderscoreJS](http://underscorejs.org/)
 * [JQuery](https://jquery.com/)
 * [Twitter Text JS](https://github.com/twitter/twitter-text/tree/master/js)
+
+## Notes
+* Twitter public API enforces some throttling per application and token basis, hence at some point the application might stop collecting tweets.
 
 ## Thanks to
 * [Examples using Akka HTTP with Streaming](https://github.com/calvinlfer/akka-http-streaming-response-examples)
