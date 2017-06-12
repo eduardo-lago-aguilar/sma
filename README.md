@@ -4,14 +4,16 @@ An running demo of applied [Event-Sourcing](https://martinfowler.com/eaaDev/Even
 
 ## Summary
 In a web UI users subscribes/un-subscribes to/from a given set of terms (called _tracking terms_), a background process crawls Twitter collecting and persisting all tweets resulting from the search, tweets are delivery back to UI in a non-blocking way.
-## Architecure Guidelines / Tech Cocktail
+
+## Architecture Guideline / Tech Cocktail
 
 * [Event-Sourcing](https://martinfowler.com/eaaDev/EventSourcing.html) & [CQRS](https://martinfowler.com/bliki/CQRS.html)
-* Scalable & HA storage: [Kafka](https://kafka.apache.org)
+* Distributed, scalable, partitioned, replicated commit log storage service. with publish/subscribe features, serving as backbone: [Kafka](https://kafka.apache.org)
 * Resource manager: [Zookeeper](http://zookeeper.apache.org/)
 * Not a big deal to have a delay between a tweet post & visualization
 * Eventual consistency embraced in favor of Availability and Partitioning Tolerance: [CAP](https://en.wikipedia.org/wiki/CAP_theorem)
 * Scalable streaming architecture for social media feed as it gets ingested: [Akka Streams](http://akka.io/docs/)
+* Standard for async stream processing with non-blocking back-pressure: [Akka Streams](http://akka.io/docs/)
 * REST data ingestion via Microservices by following/forgetting tracking terms: [Akka Http](http://akka.io/docs/) + [Actor Model](https://www.infoq.com/news/2014/10/intro-actor-model)
 * Reactive websockets, pushing (streaming) tweets from server to UI: [Akka Http](http://akka.io/docs/) + [Actor Model](https://www.infoq.com/news/2014/10/intro-actor-model) + [Reactive Kafka](https://github.com/akka/reactive-kafka)
 * Low latency processing
